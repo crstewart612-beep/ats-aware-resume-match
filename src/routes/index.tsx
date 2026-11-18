@@ -214,7 +214,7 @@ function Setup(props: {
           <Gauge className="size-4" /> {ALL_ATS.length - 1} hiring systems, one honest score
         </p>
         <h1 className="mx-auto max-w-3xl text-4xl leading-[1.08] font-medium sm:text-6xl">
-          Know your score before you hit <em className="text-primary not-italic underline decoration-accent decoration-4 underline-offset-8">Apply</em>.
+          Know your score before you hit <em className="text-primary not-italic underline decoration-accent decoration-4 underline-offset-8 [text-decoration-skip-ink:none]">Apply</em>.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-foreground/75">
           See exactly where your resume meets the job — and where it doesn't — on the system the employer actually

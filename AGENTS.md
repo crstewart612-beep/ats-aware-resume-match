@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- ATS data in `src/data/ats.ts`, `src/data/toolkit.ts` and `src/lib/ats-rules.server.ts` is generated from the owner's "ATS Resume Toolkit" Google Sheet; regenerate from the sheet rather than hand-editing, so the app stays in sync with the workbook.
+- AI calls live only in `src/lib/resume-ai.server.ts`, reached through the `/api/analyze` and `/api/rewrite` server routes that stream NDJSON partial objects; long structured outputs must stream to the browser to avoid hosting timeouts.
+- Scoring and rewrite outputs are defined by zod schemas in `src/lib/resume-schemas.ts`, shared by server and UI; change the schema first, then both sides.
+- No accounts or storage: resumes and reports live in page state only, so nothing personal is persisted.
