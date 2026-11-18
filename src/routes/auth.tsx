@@ -172,8 +172,8 @@ function AuthPage() {
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 {mode === "signin"
-                  ? "Sign in to pick up where you left off and see your plan."
-                  : "Free to start: a few score reports and a rewrite each month, no card needed."}
+                  ? "Sign in to pick up where you left off and see your reports."
+                  : "Free to start: your first report and rewrite are on us, no card needed."}
               </p>
 
               <Button

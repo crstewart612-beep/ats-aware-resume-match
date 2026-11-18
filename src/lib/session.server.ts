@@ -62,14 +62,14 @@ export async function readSession(request: Request): Promise<Session | null> {
   return { userId: String(userId), entitlement: await entitlementOf(supabase, paymentsEnvFor(request)), supabase };
 }
 
-/** Reads the customer's paid state and this month's usage in one call. */
+/** Reads the customer's paid state and lifetime usage in one call. */
 export async function entitlementOf(supabase: SupabaseUserClient, env: PaddleEnv): Promise<Entitlement> {
   const { data, error } = await supabase.rpc("entitlement", { p_env: env });
   if (error || !data) return EMPTY_ENTITLEMENT;
   return toEntitlement(data);
 }
 
-/** Counts one completed use against the customer's month. */
+/** Counts one completed use against the customer's reports. */
 export async function recordUsage(
   supabase: SupabaseUserClient,
   kind: "score" | "rewrite",
