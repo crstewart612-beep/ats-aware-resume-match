@@ -36,10 +36,15 @@ export async function downloadResumeDocx(markdown: string, fileName: string) {
     sections: [{ properties: { page: { margin: { top: 900, bottom: 900, left: 1000, right: 1000 } } }, children }],
   });
   const blob = await Packer.toBlob(doc);
+  const name = fileName.endsWith(".docx") ? fileName : `${fileName}.docx`;
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = fileName.endsWith(".docx") ? fileName : `${fileName}.docx`;
+  a.download = name;
+  a.rel = "noopener";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  // Revoking immediately cancels the download in some browsers.
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
