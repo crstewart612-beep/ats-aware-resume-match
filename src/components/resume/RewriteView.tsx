@@ -200,7 +200,12 @@ function ResumePaper({
   const fileName = rewrite.fileName || "Resume.docx";
 
   const copy = async () => {
-    await navigator.clipboard.writeText(stripMarkdown(md));
+    try {
+      await navigator.clipboard.writeText(stripMarkdown(md));
+    } catch {
+      toast.error("Copy was blocked by your browser. Select the text and copy it instead.");
+      return;
+    }
     setCopied(true);
     toast.success("Resume copied");
     setTimeout(() => setCopied(false), 1800);
