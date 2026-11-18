@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react";
 
-import { EMPTY_ENTITLEMENT, type Entitlement, type SubscriptionState } from "@/lib/entitlements";
+import { EMPTY_ENTITLEMENT, toEntitlement, type Entitlement } from "@/lib/entitlements";
+import { getPaddleEnvironment } from "@/lib/paddle";
 import { supabase } from "@/integrations/supabase/client";
 
 type SessionValue = {
@@ -25,17 +26,6 @@ type SessionValue = {
 
 const SessionContext = createContext<SessionValue | null>(null);
 
-function toEntitlement(row: unknown): Entitlement {
-  if (!row || typeof row !== "object") return EMPTY_ENTITLEMENT;
-  const r = row as Record<string, unknown>;
-  return {
-    paid: r["paid"] === true,
-    scores: Number(r["scores"] ?? 0),
-    rewrites: Number(r["rewrites"] ?? 0),
-    subscription: (r["subscription"] as SubscriptionState) ?? null,
-  };
-}
-
 /**
  * The one place that watches the sign-in state, so pages never subscribe themselves.
  * Mounted once in the root route.
@@ -50,7 +40,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [entitlement, setEntitlement] = useState<Entitlement>(EMPTY_ENTITLEMENT);
 
   const refresh = useCallback(async () => {
-    const { data, error } = await supabase.rpc("entitlement");
+    const { data, error } = await supabase.rpc("entitlement", { p_env: getPaddleEnvironment() });
     if (error) {
       setEntitlement(EMPTY_ENTITLEMENT);
       return;

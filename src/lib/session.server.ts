@@ -1,7 +1,8 @@
 // Server-only: who is asking, and what they are allowed to do.
 import { createClient } from "@supabase/supabase-js";
 
-import { EMPTY_ENTITLEMENT, type Entitlement, type SubscriptionState } from "@/lib/entitlements";
+import { EMPTY_ENTITLEMENT, toEntitlement, type Entitlement } from "@/lib/entitlements";
+import { paymentsEnvFor, type PaddleEnv } from "@/lib/paddle.server";
 import type { Database } from "@/integrations/supabase/types";
 
 function isOpaqueKey(value: string): boolean {
@@ -58,20 +59,14 @@ export async function readSession(request: Request): Promise<Session | null> {
   const { data, error } = await supabase.auth.getClaims(token);
   const userId = data?.claims?.sub;
   if (error || !userId) return null;
-  return { userId: String(userId), entitlement: await entitlementOf(supabase), supabase };
+  return { userId: String(userId), entitlement: await entitlementOf(supabase, paymentsEnvFor(request)), supabase };
 }
 
 /** Reads the customer's paid state and this month's usage in one call. */
-export async function entitlementOf(supabase: SupabaseUserClient): Promise<Entitlement> {
-  const { data, error } = await supabase.rpc("entitlement");
+export async function entitlementOf(supabase: SupabaseUserClient, env: PaddleEnv): Promise<Entitlement> {
+  const { data, error } = await supabase.rpc("entitlement", { p_env: env });
   if (error || !data) return EMPTY_ENTITLEMENT;
-  const row = data as Record<string, unknown>;
-  return {
-    paid: row["paid"] === true,
-    scores: Number(row["scores"] ?? 0),
-    rewrites: Number(row["rewrites"] ?? 0),
-    subscription: (row["subscription"] as SubscriptionState) ?? null,
-  };
+  return toEntitlement(data);
 }
 
 /** Counts one completed use against the customer's month. */

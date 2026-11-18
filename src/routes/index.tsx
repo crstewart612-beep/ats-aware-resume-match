@@ -156,7 +156,7 @@ function Index() {
           {userId ? (
             <Link to="/account">
               <Button variant="outline" size="sm">
-                Your plan
+                Your reports
               </Button>
             </Link>
           ) : (

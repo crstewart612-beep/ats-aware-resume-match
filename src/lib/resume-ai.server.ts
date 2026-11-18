@@ -4,12 +4,7 @@ import type { z } from "zod";
 
 import { findAts } from "@/data/ats";
 import { ATS_RULES, UNIVERSAL_RULES } from "@/lib/ats-rules.server";
-import {
-  FREE_MONTHLY_REWRITES,
-  FREE_MONTHLY_SCORES,
-  rewriteAllowed,
-  scoreAllowed,
-} from "@/lib/entitlements";
+import { rewriteAllowed, scoreAllowed } from "@/lib/entitlements";
 import { createLovableAiGatewayRunIdFetch, withLovableAiGatewayRunIdHeader } from "@/lib/run-id.server";
 import {
   analyzeRequestSchema,
@@ -241,10 +236,10 @@ async function gate(request: Request, kind: "score" | "rewrite") {
     const denied =
       kind === "score"
         ? planRequired(
-            `You've used your ${FREE_MONTHLY_SCORES} free score reports this month. A plan unlocks unlimited reports.`,
+            "You've used all your reports. A report pack adds 10 more, each with a rewrite.",
           )
         : planRequired(
-            `You've used your ${FREE_MONTHLY_REWRITES} free rewrite this month. A plan unlocks unlimited rewrites.`,
+            "You've used all your rewrites. A report pack adds 10 more reports, each with a rewrite.",
           );
     return { session: null as null, denied };
   }
