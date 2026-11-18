@@ -40,7 +40,7 @@ export async function postNdjson<T>(
 
   const handle = (line: string) => {
     if (!line.trim()) return;
-    const event = JSON.parse(line) as StreamEvent<T> | { type: "ping" };
+    const event = JSON.parse(noDashes(line)) as StreamEvent<T> | { type: "ping" };
     if (event.type === "partial") onPartial(event.data);
     else if (event.type === "final") final = event.data;
     else if (event.type === "error") throw new StreamRequestError(event.status, event.message);
@@ -59,4 +59,11 @@ export async function postNdjson<T>(
   handle(buffer);
   if (!final) throw new StreamRequestError(502, "The answer was cut off. Please try again.");
   return final;
+}
+
+/** Removes em/en dashes from AI text (house style), keeping date ranges readable. */
+export function noDashes(text: string): string {
+  return text
+    .replace(/(\d)\s*[\u2013\u2014]\s*(\d|Present|Current)/g, "$1 - $2")
+    .replace(/\s*[\u2014\u2013]\s*/g, ", ");
 }
