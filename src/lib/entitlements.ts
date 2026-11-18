@@ -1,56 +1,65 @@
-// What a customer may do, and what a paying plan unlocks.
-// Only edit the numbers below: they are the whole free-tier policy.
+// What a customer may do. ResumeMatch sells one-time report packs; nothing renews.
+// Each report includes one rewrite. Only edit the numbers below.
 
-/** Score reports a signed-in customer gets each month without paying. */
-export const FREE_MONTHLY_SCORES = 3;
-/** Rewrites a signed-in customer gets each month without paying. */
-export const FREE_MONTHLY_REWRITES = 1;
+/** Reports every signed-in customer gets once, free, to try the app. */
+export const FREE_REPORTS = 1;
+/** Reports added by one pack. */
+export const PACK_REPORTS = 10;
+/** Human-readable price id of the pack in the payments catalog. */
+export const PACK_PRICE_ID = "resume_match_pack_10";
 
-export const PLAN_NAME = "ResumeMatch Pro";
-export const PLAN_PRICE = "$19 per month";
+export const PLAN_NAME = "ResumeMatch Report Pack";
+export const PLAN_PRICE = "$19, one payment, nothing renews";
 export const PLAN_BENEFITS = [
-  "Unlimited score reports",
-  "Unlimited AI rewrites",
-  "Every hiring system, including the ones still coming",
-  "Your saved reports stay available",
+  `${PACK_REPORTS} score reports on any hiring system`,
+  "A truthful AI rewrite and new score with every report",
+  "Word download of each rewritten resume",
+  "Reports never expire",
 ];
 
-export type SubscriptionState = {
-  status: string;
-  plan: string;
-  currentPeriodEnd: string | null;
-  cancelAtPeriodEnd: boolean;
-} | null;
-
 export type Entitlement = {
-  paid: boolean;
+  /** Reports bought across all packs. */
+  purchased: number;
+  /** Reports used in total. */
   scores: number;
+  /** Rewrites used in total. */
   rewrites: number;
-  subscription: SubscriptionState;
 };
 
-export const EMPTY_ENTITLEMENT: Entitlement = {
-  paid: false,
-  scores: 0,
-  rewrites: 0,
-  subscription: null,
-};
+export const EMPTY_ENTITLEMENT: Entitlement = { purchased: 0, scores: 0, rewrites: 0 };
 
-/** A paying customer is never limited; a free one has monthly scores left. */
+export function reportsTotal(e: Entitlement): number {
+  return FREE_REPORTS + e.purchased;
+}
+
+export function hasPurchased(e: Entitlement): boolean {
+  return e.purchased > 0;
+}
+
 export function scoreAllowed(e: Entitlement): boolean {
-  return e.paid || e.scores < FREE_MONTHLY_SCORES;
+  return e.scores < reportsTotal(e);
 }
 
-/** A paying customer is never limited; a free one has monthly rewrites left. */
+/** One rewrite per report available. */
 export function rewriteAllowed(e: Entitlement): boolean {
-  return e.paid || e.rewrites < FREE_MONTHLY_REWRITES;
+  return e.rewrites < reportsTotal(e);
 }
 
-/** "2 of 3 free score reports left this month", or "included in your plan". */
+/** "3 of 11 reports left" style line. */
 export function allowanceLine(e: Entitlement, kind: "score" | "rewrite"): string {
-  if (e.paid) return "Unlimited on your plan";
-  const limit = kind === "score" ? FREE_MONTHLY_SCORES : FREE_MONTHLY_REWRITES;
+  const total = reportsTotal(e);
   const used = kind === "score" ? e.scores : e.rewrites;
-  const left = Math.max(0, limit - used);
-  return `${left} of ${limit} free ${kind === "score" ? "reports" : "rewrites"} left this month`;
+  const left = Math.max(0, total - used);
+  const noun = kind === "score" ? "report" : "rewrite";
+  return `${left} of ${total} ${noun}${total === 1 ? "" : "s"} left`;
+}
+
+export function toEntitlement(row: unknown): Entitlement {
+  if (!row || typeof row !== "object") return EMPTY_ENTITLEMENT;
+  const r = row as Record<string, unknown>;
+  return {
+    purchased: Number(r["purchased"] ?? 0),
+    scores: Number(r["scores"] ?? 0),
+    rewrites: Number(r["rewrites"] ?? 0),
+  };
 }

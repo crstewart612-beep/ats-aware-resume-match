@@ -15,6 +15,13 @@
       "when": 1795032676785,
       "tag": "0001_paddle_subscription_state",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795041451895,
+      "tag": "0002_report_packs",
+      "breakpoints": true
     }
   ]
 }

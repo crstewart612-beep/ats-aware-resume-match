@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      purchases: {
+        Row: {
+          created_at: string
+          environment: string
+          id: string
+          paddle_transaction_id: string
+          price_id: string
+          reports: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          id?: string
+          paddle_transaction_id: string
+          price_id: string
+          reports: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          id?: string
+          paddle_transaction_id?: string
+          price_id?: string
+          reports?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean

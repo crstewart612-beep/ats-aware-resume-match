@@ -1,7 +1,7 @@
 // Browser side: loads the payments overlay and resolves human-readable price ids.
 import { resolvePaddlePrice } from "@/utils/payments.functions";
 
-const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN;
+const clientToken = import.meta.env["VITE_PAYMENTS_CLIENT_TOKEN"] as string | undefined;
 
 declare global {
   interface Window {
