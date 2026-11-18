@@ -179,7 +179,7 @@ function RequirementMap({ report, loading }: { report: PartialReport; loading: b
   ];
   return (
     <Section
-      title="Where you match — and where you don't"
+      title="Where you match, and where you don't"
       subtitle="Every requirement from the job post, checked against your resume"
       icon={ListChecks}
       action={
@@ -238,7 +238,7 @@ function RequirementMap({ report, loading }: { report: PartialReport; loading: b
 }
 
 const gapGroups = [
-  { key: "rewrite", title: "Fixable by a rewrite", note: "The experience is there — it just needs clearer wording.", tone: "bg-met-soft text-met" },
+  { key: "rewrite", title: "Fixable by a rewrite", note: "The experience is there. It just needs clearer wording.", tone: "bg-met-soft text-met" },
   { key: "me", title: "Fixable by you", note: "Something you could confirm, learn or try.", tone: "bg-partial-soft text-partial" },
   { key: "not_fixable", title: "Not fixable for this job", note: "Be honest with yourself here.", tone: "bg-missing-soft text-missing" },
 ] as const;
@@ -311,7 +311,7 @@ function QuestionsPanel({
         .filter((a) => a.choice || a.details.trim())
         .map((a) => ({
           question: a.question,
-          answer: [a.choice ? choiceLabels[a.choice] : "", a.details.trim()].filter(Boolean).join(" — "),
+          answer: [a.choice ? choiceLabels[a.choice] : "", a.details.trim()].filter(Boolean).join(": "),
         })),
     );
 
@@ -325,7 +325,7 @@ function QuestionsPanel({
           <div>
             <h2 className="text-2xl">Is a rewrite worth it? Let's find out.</h2>
             <p className="mt-1 text-sm text-secondary-foreground/80">
-              Answer what you can — honest answers only. Anything you confirm can be added to your resume; anything you
+              Answer what you can. Honest answers only. Anything you confirm can be added to your resume; anything you
               say no to stays off.
             </p>
           </div>
@@ -367,7 +367,7 @@ function QuestionsPanel({
                 <Textarea
                   value={a?.details ?? ""}
                   onChange={(e) => update(i, { details: e.target.value })}
-                  placeholder="Add the details — where, when, what tool, any numbers…"
+                  placeholder="Add the details: where, when, what tool, any numbers…"
                   className="animate-rise mt-3 min-h-20 rounded-xl"
                 />
               )}

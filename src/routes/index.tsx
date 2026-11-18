@@ -19,13 +19,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ResumeMatch — Know your ATS score before you apply" },
+      { title: "ResumeMatch: Know your ATS score before you apply" },
       {
         name: "description",
         content:
           "Choose the employer's hiring system, paste the job description and attach your resume. Get an honest score, a gap report and a rewrite.",
       },
-      { property: "og:title", content: "ResumeMatch — Know your ATS score before you apply" },
+      { property: "og:title", content: "ResumeMatch: Know your ATS score before you apply" },
       {
         property: "og:description",
         content: "An honest resume score for Workday, Greenhouse, Taleo, iCIMS and 13 more hiring systems.",
@@ -217,7 +217,7 @@ function Setup(props: {
           Know your score before you hit <em className="text-primary not-italic underline decoration-accent decoration-4 underline-offset-8 [text-decoration-skip-ink:none]">Apply</em>.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-foreground/75">
-          See exactly where your resume meets the job — and where it doesn't — on the system the employer actually
+          See exactly where your resume meets the job, and where it doesn't, on the system the employer actually
           uses. Then get a truthful rewrite and a new score.
         </p>
       </section>
@@ -231,13 +231,13 @@ function Setup(props: {
             <Textarea
               value={props.jobDescription}
               onChange={(e) => props.setJobDescription(e.target.value)}
-              placeholder="Paste the full posting — title, responsibilities, requirements, nice-to-haves…"
+              placeholder="Paste the full posting: title, responsibilities, requirements, nice-to-haves…"
               className="min-h-52 rounded-2xl bg-card p-4 text-sm leading-relaxed"
               aria-label="Job description"
             />
             <p className={cn("mt-2 text-xs", jdLen > 0 && jdLen < MIN_JD ? "text-partial" : "text-muted-foreground")}>
               {jdLen > 0 && jdLen < MIN_JD
-                ? "Add a bit more — the full posting gives the most accurate score."
+                ? "Add a bit more. The full posting gives the most accurate score."
                 : "Include everything: requirements, preferred skills and duties."}
             </p>
           </Step>

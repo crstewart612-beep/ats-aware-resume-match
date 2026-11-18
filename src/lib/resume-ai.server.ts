@@ -47,7 +47,13 @@ function atsContext(atsId: string) {
   };
 }
 
-const TONE = `VOICE: You are ResumeMatch, a warm, honest career coach. Speak to the job seeker as "you", in short plain sentences. Be encouraging but never inflate scores. No buzzwords, no long paragraphs.`;
+const TONE = `VOICE: You are ResumeMatch, a warm, honest career coach. Speak to the job seeker as "you", in short plain sentences. Be encouraging but never inflate scores. No buzzwords, no long paragraphs. Never use em-dashes (—) or en-dashes as punctuation; use commas, periods or colons instead. For date ranges write "MM/YYYY - MM/YYYY" with a plain hyphen.`;
+
+function today() {
+  const d = new Date();
+  const month = d.toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+  return `TODAY'S DATE: ${month} ${d.getUTCDate()}, ${d.getUTCFullYear()}. Any date on or before today is in the past, not the future. Do not flag past dates (including recent ones) as future or impossible. "Present" or "Current" means an ongoing role. Only flag a date that is truly after today.`;
+}
 
 function resumeParts(resume: ResumeInput): ModelMessage["content"] {
   if (resume.kind === "pdf") {
@@ -205,6 +211,8 @@ export async function handleAnalyze(request: Request) {
 
   const system = `${TONE}
 
+${today()}
+
 ${ctx.text}
 
 TASK: STEP 1 - PRE-APPLICATION SCORECARD. Do not rewrite anything. Evaluate the resume exactly as it is now against the job description and this hiring system.
@@ -243,6 +251,8 @@ export async function handleRewrite(request: Request) {
     .join("\n");
 
   const system = `${TONE}
+
+${today()}
 
 ${ctx.text}
 

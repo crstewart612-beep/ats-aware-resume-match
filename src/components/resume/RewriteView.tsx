@@ -249,7 +249,7 @@ function ResumePaper({
           <p className="flex items-start gap-2 text-sm font-semibold break-all">
             <FileText className="mt-0.5 size-4 shrink-0 text-primary" /> {loading ? "Writing…" : fileName}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">Single column, standard headings — ready for the hiring system.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Single column, standard headings, ready for the hiring system.</p>
           <div className="mt-4 grid gap-2">
             <Button
               variant="hero"

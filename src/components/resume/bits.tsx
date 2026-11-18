@@ -125,7 +125,7 @@ const verdictMeta: Record<Verdict, { label: string; tone: Tone; note: string }> 
   apply_with_referral: {
     label: "Apply with a referral",
     tone: "sky",
-    note: "Worth applying — a referral will help you get seen.",
+    note: "Worth applying. A referral will help you get seen.",
   },
   skip: { label: "Consider skipping", tone: "missing", note: "A key requirement is out of reach for now." },
 };
