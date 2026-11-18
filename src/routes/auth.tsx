@@ -278,7 +278,7 @@ function AuthPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Your resume is never stored. Sign in only keeps your plan and your monthly allowance
+          Your resume is never stored. Sign in only keeps your report count
           straight.
         </p>
       </main>
