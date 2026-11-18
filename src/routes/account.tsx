@@ -1,32 +1,26 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, LogOut, ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Check, Copy, KeyRound, ShoppingBag } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Logo } from "@/components/resume/bits";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
-import {
-  allowanceLine,
-  hasPurchased,
-  PACK_PRICE_ID,
-  PLAN_BENEFITS,
-  PLAN_NAME,
-  PLAN_PRICE,
-  scoreAllowed,
-} from "@/lib/entitlements";
+import { Input } from "@/components/ui/input";
+import { useAccess } from "@/lib/access-context";
+import { PACK_PRICE_ID, PLAN_BENEFITS, PLAN_NAME, PLAN_PRICE } from "@/lib/entitlements";
 import { getPaddlePriceId, initializePaddle } from "@/lib/paddle";
-import { useSession } from "@/lib/session-context";
+import { codeForPayment } from "@/utils/access.functions";
+
+const PENDING_KEY = "rm_pending_payment";
 
 export const Route = createFileRoute("/account")({
-  validateSearch: (s: Record<string, unknown>): { checkout?: "success" } =>
-    s["checkout"] === "success" ? { checkout: "success" } : {},
   head: () => ({
     meta: [
-      { title: "Your reports | ResumeMatch" },
-      { name: "description", content: "See how many ResumeMatch reports you have left and buy a 10-report pack." },
-      { property: "og:title", content: "Your reports | ResumeMatch" },
-      { property: "og:description", content: "Buy a one-time 10-report pack. Nothing renews." },
+      { title: "Get reports | ResumeMatch" },
+      { name: "description", content: "Buy a one-time ResumeMatch pack of 10 reports and get your access code. No account needed." },
+      { property: "og:title", content: "Get reports | ResumeMatch" },
+      { property: "og:description", content: "One payment of $19 for 10 reports. No account, nothing renews." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -35,38 +29,58 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
-  const { userId, email, ready, entitlement, signOut, refresh } = useSession();
-  const { checkout } = Route.useSearch();
-  const navigate = useNavigate();
+  const { code, status, allowance, useCode, clearCode } = useAccess();
   const [busy, setBusy] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const [entry, setEntry] = useState("");
+  const [newCode, setNewCode] = useState<string | null>(null);
 
-  // After paying, the purchase lands a few seconds later; check a few times.
+  // After paying, the code is created a few seconds later; check until it appears.
+  const waitForCode = useCallback(
+    async (transactionId: string) => {
+      setWaiting(true);
+      for (let i = 0; i < 20; i++) {
+        const { code: c } = await codeForPayment({ data: { transactionId } });
+        if (c) {
+          sessionStorage.removeItem(PENDING_KEY);
+          await useCode(c);
+          setNewCode(c);
+          setWaiting(false);
+          toast.success("Thank you! Your 10 reports are ready.");
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+      setWaiting(false);
+      toast.error("Your payment went through, but the code is slow to arrive. Refresh this page in a minute.");
+    },
+    [useCode],
+  );
+
   useEffect(() => {
-    if (checkout !== "success" || !userId) return;
-    toast.success("Thank you! Your reports are being added.");
-    let n = 0;
-    const t = setInterval(() => {
-      n += 1;
-      void refresh();
-      if (n >= 6) clearInterval(t);
-    }, 3000);
-    return () => clearInterval(t);
-  }, [checkout, userId, refresh]);
+    const pending = sessionStorage.getItem(PENDING_KEY);
+    if (pending) void waitForCode(pending);
+  }, [waitForCode]);
 
   const buy = async () => {
-    if (!userId) return;
     setBusy(true);
     try {
       await initializePaddle();
+      window.Paddle.Update({
+        eventCallback: (e: any) => {
+          if (e?.name === "checkout.completed" && e.data?.transaction_id) {
+            sessionStorage.setItem(PENDING_KEY, e.data.transaction_id);
+            window.Paddle.Checkout.close();
+            void waitForCode(e.data.transaction_id);
+          }
+        },
+      });
       const priceId = await getPaddlePriceId(PACK_PRICE_ID);
       window.Paddle.Checkout.open({
         items: [{ priceId, quantity: 1 }],
-        customer: email ? { email } : undefined,
-        customData: { userId },
         settings: {
           displayMode: "overlay",
-          successUrl: `${window.location.origin}/account?checkout=success`,
-          allowLogout: false,
+          successUrl: `${window.location.origin}/account`,
           variant: "one-page",
         },
       });
@@ -77,9 +91,22 @@ function AccountPage() {
     }
   };
 
-  const leave = async () => {
-    await signOut();
-    void navigate({ to: "/" });
+  const enter = async () => {
+    if (!(await useCode(entry))) {
+      toast.error("That code wasn't found. Check the letters and try again.");
+      return;
+    }
+    setEntry("");
+    toast.success("Code added.");
+  };
+
+  const copy = async (c: string) => {
+    try {
+      await navigator.clipboard.writeText(c);
+      toast.success("Code copied.");
+    } catch {
+      toast.error("Copy was blocked. Write the code down instead.");
+    }
   };
 
   return (
@@ -96,61 +123,96 @@ function AccountPage() {
         </header>
 
         <main className="mx-auto mt-8 w-full max-w-3xl space-y-5">
-          {!ready ? null : !userId ? (
+          {waiting && (
             <Panel>
-              <h1 className="font-display text-2xl font-semibold">Sign in to see your reports</h1>
-              <p className="mt-2 text-sm text-muted-foreground">Your free report and any packs you buy are tied to your account.</p>
-              <Link to="/auth" className="mt-6 inline-flex">
-                <Button size="xl">
-                  Sign in or create an account <ArrowRight />
-                </Button>
-              </Link>
+              <h1 className="font-display text-2xl font-semibold">Creating your access code...</h1>
+              <p className="mt-2 text-sm text-muted-foreground">This takes a few seconds. Please keep this page open.</p>
             </Panel>
-          ) : (
-            <>
-              <Panel>
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Your reports</p>
-                    <h1 className="mt-1 font-display text-3xl font-semibold">{allowanceLine(entitlement, "score")}</h1>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Signed in as {email}. {hasPurchased(entitlement) ? "Thanks for your purchase." : "Your first report is free."}
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={leave}>
-                    <LogOut /> Sign out
-                  </Button>
-                </div>
-                <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <Stat label="Score reports" value={allowanceLine(entitlement, "score")} />
-                  <Stat label="Rewrites" value={allowanceLine(entitlement, "rewrite")} />
-                </dl>
-              </Panel>
-
-              <Panel>
-                <div className="flex items-center gap-2 text-primary">
-                  <ShoppingBag className="size-5" />
-                  <h2 className="font-display text-2xl font-semibold">{PLAN_NAME}</h2>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">{PLAN_PRICE}</p>
-                <ul className="mt-5 space-y-2.5">
-                  {PLAN_BENEFITS.map((b) => (
-                    <li key={b} className="flex items-start gap-2.5 text-sm">
-                      <Check className="mt-0.5 size-4 shrink-0 text-primary" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-                <Button size="xl" className="mt-6" onClick={buy} disabled={busy}>
-                  {busy ? "Opening checkout..." : scoreAllowed(entitlement) ? "Buy 10 more reports" : "Buy 10 reports"} <ArrowRight />
-                </Button>
-              </Panel>
-
-              <p className="px-2 text-xs text-muted-foreground">
-                We keep only your account and how many reports you've used. Your resume and job descriptions are never stored.
-              </p>
-            </>
           )}
+
+          {(newCode ?? code) && (
+            <Panel>
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Your access code</p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <span className="font-mono text-3xl font-semibold tracking-wider">{newCode ?? code}</span>
+                <Button variant="outline" size="sm" onClick={() => copy((newCode ?? code)!)}>
+                  <Copy /> Copy
+                </Button>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Save this code. It's already active on this device. To use your reports on another phone or computer, type it in below.
+              </p>
+              {status && (
+                <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <Stat label="Score reports" value={`${status.scoresLeft} of ${status.reports} left`} />
+                  <Stat label="Rewrites" value={`${status.rewritesLeft} of ${status.reports} left`} />
+                </dl>
+              )}
+              <button type="button" className="mt-4 text-xs text-muted-foreground underline" onClick={clearCode}>
+                Remove code from this device
+              </button>
+            </Panel>
+          )}
+
+          {!code && !newCode && (
+            <Panel>
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Your reports</p>
+              <h1 className="mt-1 font-display text-3xl font-semibold">{allowance || "\u00a0"}</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Your first report and rewrite are free. No account needed.</p>
+            </Panel>
+          )}
+
+          <Panel>
+            <div className="flex items-center gap-2 text-primary">
+              <ShoppingBag className="size-5" />
+              <h2 className="font-display text-2xl font-semibold">{PLAN_NAME}</h2>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">{PLAN_PRICE}</p>
+            <ul className="mt-5 space-y-2.5">
+              {PLAN_BENEFITS.map((b) => (
+                <li key={b} className="flex items-start gap-2.5 text-sm">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                  {b}
+                </li>
+              ))}
+              <li className="flex items-start gap-2.5 text-sm">
+                <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                No account or sign-in. You get an access code right after paying.
+              </li>
+            </ul>
+            <Button size="xl" className="mt-6" onClick={buy} disabled={busy || waiting}>
+              {busy ? "Opening checkout..." : "Buy 10 reports for $19"} <ArrowRight />
+            </Button>
+          </Panel>
+
+          <Panel>
+            <div className="flex items-center gap-2 text-primary">
+              <KeyRound className="size-5" />
+              <h2 className="font-display text-xl font-semibold">Already have a code?</h2>
+            </div>
+            <form
+              className="mt-4 flex flex-col gap-3 sm:flex-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void enter();
+              }}
+            >
+              <Input
+                aria-label="Access code"
+                placeholder="ABCD-EFGH-JKLM"
+                value={entry}
+                onChange={(e) => setEntry(e.target.value)}
+                className="font-mono uppercase"
+              />
+              <Button type="submit" disabled={entry.trim().length < 12}>
+                Use code
+              </Button>
+            </form>
+          </Panel>
+
+          <p className="px-2 text-xs text-muted-foreground">
+            We keep only your access code and how many reports it has used. Your resume and job descriptions are never stored.
+          </p>
         </main>
       </div>
     </div>

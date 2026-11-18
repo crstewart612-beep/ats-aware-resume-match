@@ -13,7 +13,7 @@ import {
   rewriteSchema,
   type ResumeInput,
 } from "@/lib/resume-schemas";
-import { readSession, recordUsage } from "@/lib/session.server";
+import { allowed, consume, readAccess } from "@/lib/access.server";
 
 const MODEL = "anthropic/claude-sonnet-5";
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
@@ -208,18 +208,6 @@ async function parseBody<S extends z.ZodTypeAny>(request: Request, schema: S) {
 
 const badRequest = (message: string) => Response.json({ type: "error", status: 400, message }, { status: 400 });
 
-/** Anonymous visitors get this; the app shows the sign-in screen instead of a score. */
-const signInRequired = () =>
-  Response.json(
-    {
-      type: "error",
-      status: 401,
-      code: "sign_in",
-      message: "Please sign in to score your resume. Creating an account is free.",
-    },
-    { status: 401 },
-  );
-
 /** Free allowance used up; the app offers the paid plan instead of running the AI. */
 const planRequired = (message: string) =>
   Response.json(
@@ -227,23 +215,26 @@ const planRequired = (message: string) =>
     { status: 402 },
   );
 
-/** Refuses the request unless the caller is signed in and still within their allowance. */
+/** Refuses the request unless this access code (or the free try) still has reports left. */
 async function gate(request: Request, kind: "score" | "rewrite") {
-  const session = await readSession(request);
-  if (!session) return { session: null as null, denied: signInRequired() };
-  const allowed = kind === "score" ? scoreAllowed(session.entitlement) : rewriteAllowed(session.entitlement);
-  if (!allowed) {
-    const denied =
-      kind === "score"
-        ? planRequired(
-            "You've used all your reports. A report pack adds 10 more, each with a rewrite.",
-          )
-        : planRequired(
-            "You've used all your rewrites. A report pack adds 10 more reports, each with a rewrite.",
-          );
-    return { session: null as null, denied };
+  const access = readAccess(request);
+  if (!access) return { access: null, denied: badRequest("Please refresh the page and try again.") };
+  const state = await allowed(access, kind);
+  if (state === "unknown_code")
+    return {
+      access: null,
+      denied: Response.json(
+        { type: "error", status: 402, code: "bad_code", message: "That access code wasn't found. Check it on the Get reports page." },
+        { status: 402 },
+      ),
+    };
+  if (state === "used_up") {
+    const msg = access.code
+      ? "This access code has no reports left. A new pack adds 10 more, each with a rewrite."
+      : "You've used your free report. A one-time pack adds 10 reports, each with a rewrite.";
+    return { access: null, denied: planRequired(msg) };
   }
-  return { session, denied: null as Response | null };
+  return { access, denied: null as Response | null };
 }
 
 export async function handleAnalyze(request: Request) {
@@ -287,7 +278,7 @@ TASK: STEP 1 - PRE-APPLICATION SCORECARD. Do not rewrite anything. Evaluate the 
     system,
     messages,
     maxOutputTokens: 20000,
-    onDone: () => recordUsage(access.session!.supabase, "score"),
+    onDone: () => consume(access.access!, "score"),
   });
 }
 
@@ -355,6 +346,6 @@ TASK: STEP 2 - REWRITE. Edit, fix or rewrite the resume so it parses cleanly in 
     system,
     messages,
     maxOutputTokens: 32000,
-    onDone: () => recordUsage(access.session!.supabase, "rewrite"),
+    onDone: () => consume(access.access!, "rewrite"),
   });
 }

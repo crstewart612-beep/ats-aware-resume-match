@@ -35,3 +35,4 @@ use the editor.
 - AI calls live only in `src/lib/resume-ai.server.ts`, reached through the `/api/analyze` and `/api/rewrite` server routes that stream NDJSON partial objects; long structured outputs must stream to the browser to avoid hosting timeouts.
 - Scoring and rewrite outputs are defined by zod schemas in `src/lib/resume-schemas.ts`, shared by server and UI; change the schema first, then both sides.
 - No accounts or storage: resumes and reports live in page state only, so nothing personal is persisted.
+- Customers have no accounts: a paid pack is an access code created by the payments webhook, sent by the browser as X-Access-Code; the free report is tracked per browser id (X-Device-Id). Limits are enforced server-side in `src/lib/access.server.ts` so the app never needs sign-in.

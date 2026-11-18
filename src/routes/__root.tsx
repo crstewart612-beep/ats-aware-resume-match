@@ -11,7 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
-import { SessionProvider } from "@/lib/session-context";
+import { AccessProvider } from "@/lib/access-context";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -138,10 +138,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <SessionProvider>
+      <AccessProvider>
         <Outlet />
         <Toaster position="top-center" />
-      </SessionProvider>
+      </AccessProvider>
     </QueryClientProvider>
   );
 }

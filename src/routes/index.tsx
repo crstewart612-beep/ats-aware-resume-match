@@ -11,11 +11,10 @@ import { RewriteView } from "@/components/resume/RewriteView";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ALL_ATS, findAts } from "@/data/ats";
-import { allowanceLine } from "@/lib/entitlements";
 import { stripMarkdown } from "@/lib/resume-markdown";
 import type { PartialReport, PartialRewrite, Report, ResumeInput, Rewrite } from "@/lib/resume-schemas";
 import { StreamRequestError, postNdjson } from "@/lib/stream-client";
-import { useSession } from "@/lib/session-context";
+import { useAccess } from "@/lib/access-context";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -43,7 +42,7 @@ type Stage = "setup" | "report" | "rewrite";
 const MIN_JD = 80;
 
 function Index() {
-  const { userId, entitlement } = useSession();
+  const { allowance, refresh } = useAccess();
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("setup");
   const [atsId, setAtsId] = useState<string | null>(null);
@@ -64,10 +63,7 @@ function Index() {
   const fail = (e: unknown, back: Stage) => {
     if (e instanceof DOMException && e.name === "AbortError") {
       toast("Stopped.");
-    } else if (e instanceof StreamRequestError && e.code === "sign_in") {
-      toast("Please sign in first. Creating an account is free.");
-      void navigate({ to: "/auth" });
-    } else if (e instanceof StreamRequestError && e.code === "plan_required") {
+    } else if (e instanceof StreamRequestError && (e.code === "plan_required" || e.code === "bad_code")) {
       toast.error(e.message);
       void navigate({ to: "/account" });
     } else {
@@ -100,6 +96,7 @@ function Index() {
       fail(e, "setup");
     } finally {
       setLoading(false);
+      void refresh();
     }
   };
 
@@ -123,6 +120,7 @@ function Index() {
       fail(e, "report");
     } finally {
       setLoading(false);
+      void refresh();
     }
   };
 
@@ -153,19 +151,11 @@ function Index() {
           <Logo />
         </button>
         <div className="flex items-center gap-2">
-          {userId ? (
-            <Link to="/account">
-              <Button variant="outline" size="sm">
-                Your reports
-              </Button>
-            </Link>
-          ) : (
-            <Link to="/auth">
-              <Button variant="outline" size="sm">
-                Sign in
-              </Button>
-            </Link>
-          )}
+          <Link to="/account">
+            <Button variant="outline" size="sm">
+              Get reports
+            </Button>
+          </Link>
           {loading && (
             <Button variant="outline" size="sm" onClick={() => abortRef.current?.abort()}>
               <Square className="size-3" /> Stop
@@ -191,7 +181,7 @@ function Index() {
             ready={ready}
             onAnalyze={analyze}
             jdRef={jdRef}
-            allowance={allowanceLine(entitlement, "score")}
+            allowance={allowance}
           />
         )}
         {stage === "report" && ats && (

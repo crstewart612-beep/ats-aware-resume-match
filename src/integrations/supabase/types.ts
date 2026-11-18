@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          environment: string
+          paddle_transaction_id: string
+          reports: number
+          rewrites_used: number
+          scores_used: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          environment?: string
+          paddle_transaction_id: string
+          reports?: number
+          rewrites_used?: number
+          scores_used?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          environment?: string
+          paddle_transaction_id?: string
+          reports?: number
+          rewrites_used?: number
+          scores_used?: number
+        }
+        Relationships: []
+      }
+      free_tries: {
+        Row: {
+          created_at: string
+          device_id: string
+          rewrites_used: number
+          scores_used: number
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          rewrites_used?: number
+          scores_used?: number
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          rewrites_used?: number
+          scores_used?: number
+        }
+        Relationships: []
+      }
       purchases: {
         Row: {
           created_at: string
@@ -133,6 +184,10 @@ export type Database = {
       entitlement: { Args: { p_env?: string }; Returns: Json }
       is_paid: { Args: { p_env?: string; p_user: string }; Returns: boolean }
       record_usage: { Args: { p_kind: string }; Returns: number }
+      use_access: {
+        Args: { p_code: string; p_device: string; p_kind: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
