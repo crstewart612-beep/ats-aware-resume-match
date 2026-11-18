@@ -190,7 +190,7 @@ function Index() {
 
 function Setup(props: {
   atsId: string | null;
-  setAtsId: (id: string) => void;
+  setAtsId: (id: string | null) => void;
   jobDescription: string;
   setJobDescription: (v: string) => void;
   resume: ResumeInput | null;

@@ -40,7 +40,7 @@ export async function postNdjson<T>(
 
   const handle = (line: string) => {
     if (!line.trim()) return;
-    const event = JSON.parse(noDashes(line)) as StreamEvent<T> | { type: "ping" };
+    const event = cleanDashes(JSON.parse(line)) as StreamEvent<T> | { type: "ping" };
     if (event.type === "partial") onPartial(event.data);
     else if (event.type === "final") final = event.data;
     else if (event.type === "error") throw new StreamRequestError(event.status, event.message);
@@ -64,6 +64,15 @@ export async function postNdjson<T>(
 /** Removes em/en dashes from AI text (house style), keeping date ranges readable. */
 export function noDashes(text: string): string {
   return text
-    .replace(/(\d)\s*[\u2013\u2014]\s*(\d|Present|Current)/g, "$1 - $2")
-    .replace(/\s*[\u2014\u2013]\s*/g, ", ");
+    .replace(/(\d)\s*[\u2012-\u2015\u2212]\s*(\d|Present|Current)/g, "$1 - $2")
+    .replace(/\s*[\u2012-\u2015]\s*/g, ", ");
+}
+
+/** Applies noDashes to every string in parsed AI output (escaped \u2014 sequences survive raw-line cleanup). */
+export function cleanDashes<T>(value: T): T {
+  if (typeof value === "string") return noDashes(value) as T;
+  if (Array.isArray(value)) return value.map(cleanDashes) as T;
+  if (value && typeof value === "object")
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, cleanDashes(v)])) as T;
+  return value;
 }

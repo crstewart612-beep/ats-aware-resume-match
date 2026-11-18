@@ -6,7 +6,7 @@ import { ALL_ATS, GENERIC_ATS, findAts } from "@/data/ats";
 import { detectAtsFromUrl } from "@/lib/ats-detect";
 import { cn } from "@/lib/utils";
 
-export function AtsPicker({ value, onChange }: { value: string | null; onChange: (id: string) => void }) {
+export function AtsPicker({ value, onChange }: { value: string | null; onChange: (id: string | null) => void }) {
   const [link, setLink] = useState("");
   const [query, setQuery] = useState("");
   const detected = useMemo(() => detectAtsFromUrl(link), [link]);
@@ -60,7 +60,8 @@ export function AtsPicker({ value, onChange }: { value: string | null; onChange:
             <button
               key={a.id}
               type="button"
-              onClick={() => onChange(a.id)}
+              onClick={() => onChange(active ? null : a.id)}
+              title={active ? "Click again to deselect" : undefined}
               aria-pressed={active}
               className={cn(
                 "group relative flex flex-col items-start rounded-2xl border bg-card px-3.5 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft",
