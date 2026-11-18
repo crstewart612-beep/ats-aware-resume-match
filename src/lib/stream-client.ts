@@ -1,12 +1,22 @@
 import type { StreamEvent } from "@/lib/resume-schemas";
+import { supabase } from "@/integrations/supabase/client";
 
 export class StreamRequestError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** "sign_in" means show the sign-in screen; "plan_required" means offer the paid plan. */
+    public code?: string,
   ) {
     super(message);
   }
+}
+
+/** Bearer token for the current customer, so the server knows who is asking. */
+async function authHeader(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 /** POSTs JSON and reads newline-delimited JSON events, calling onPartial as the AI writes. */
@@ -18,19 +28,24 @@ export async function postNdjson<T>(
 ): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(await authHeader()),
+    },
     body: JSON.stringify(body),
     signal: signal ?? null,
   });
   if (!res.ok || !res.body) {
     let message = "Something went wrong. Please try again.";
+    let code: string | undefined;
     try {
       const json = await res.json();
       if (json?.message) message = json.message;
+      if (json?.code) code = json.code;
     } catch {
       /* keep default */
     }
-    throw new StreamRequestError(res.status, message);
+    throw new StreamRequestError(res.status, message, code);
   }
 
   const reader = res.body.getReader();
@@ -43,7 +58,7 @@ export async function postNdjson<T>(
     const event = cleanDashes(JSON.parse(line)) as StreamEvent<T> | { type: "ping" };
     if (event.type === "partial") onPartial(event.data);
     else if (event.type === "final") final = event.data;
-    else if (event.type === "error") throw new StreamRequestError(event.status, event.message);
+    else if (event.type === "error") throw new StreamRequestError(event.status, event.message, event.code);
   };
 
   while (true) {

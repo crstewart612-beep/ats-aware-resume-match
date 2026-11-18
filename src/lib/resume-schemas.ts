@@ -133,4 +133,4 @@ export const rewriteRequestSchema = analyzeRequestSchema.extend({
 export type StreamEvent<T> =
   | { type: "partial"; data: T }
   | { type: "final"; data: T }
-  | { type: "error"; status: number; message: string };
+  | { type: "error"; status: number; message: string; code?: string };

@@ -10,12 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ApiAnalyzeRouteImport } from './routes/api/analyze'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAnalyzeRoute = ApiAnalyzeRouteImport.update({
@@ -31,30 +49,61 @@ const ApiRewriteRoute = ApiRewriteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/api/analyze': typeof ApiAnalyzeRoute
   '/api/rewrite': typeof ApiRewriteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/api/analyze': typeof ApiAnalyzeRoute
   '/api/rewrite': typeof ApiRewriteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/api/analyze': typeof ApiAnalyzeRoute
   '/api/rewrite': typeof ApiRewriteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/analyze' | '/api/rewrite'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/auth'
+    | '/reset-password'
+    | '/api/analyze'
+    | '/api/rewrite'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/analyze' | '/api/rewrite'
-  id: '__root__' | '/' | '/api/analyze' | '/api/rewrite'
+  to:
+    | '/'
+    | '/account'
+    | '/auth'
+    | '/reset-password'
+    | '/api/analyze'
+    | '/api/rewrite'
+  id:
+    | '__root__'
+    | '/'
+    | '/account'
+    | '/auth'
+    | '/reset-password'
+    | '/api/analyze'
+    | '/api/rewrite'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ApiAnalyzeRoute: typeof ApiAnalyzeRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
 }
@@ -66,6 +115,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/analyze': {
@@ -87,6 +157,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ApiAnalyzeRoute: ApiAnalyzeRoute,
   ApiRewriteRoute: ApiRewriteRoute,
 }

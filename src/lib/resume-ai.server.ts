@@ -4,6 +4,12 @@ import type { z } from "zod";
 
 import { findAts } from "@/data/ats";
 import { ATS_RULES, UNIVERSAL_RULES } from "@/lib/ats-rules.server";
+import {
+  FREE_MONTHLY_REWRITES,
+  FREE_MONTHLY_SCORES,
+  rewriteAllowed,
+  scoreAllowed,
+} from "@/lib/entitlements";
 import { createLovableAiGatewayRunIdFetch, withLovableAiGatewayRunIdHeader } from "@/lib/run-id.server";
 import {
   analyzeRequestSchema,
@@ -12,6 +18,7 @@ import {
   rewriteSchema,
   type ResumeInput,
 } from "@/lib/resume-schemas";
+import { readSession, recordUsage } from "@/lib/session.server";
 
 const MODEL = "anthropic/claude-sonnet-5";
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
@@ -119,6 +126,8 @@ function streamObject<S extends z.ZodTypeAny>(opts: {
   system: string;
   messages: ModelMessage[];
   maxOutputTokens: number;
+  /** Runs once the answer is complete and delivered, so a failed call is never charged. */
+  onDone?: () => Promise<unknown> | void;
 }) {
   const apiKey = process.env['LOVABLE_API_KEY'];
   if (!apiKey) {
@@ -169,6 +178,7 @@ function streamObject<S extends z.ZodTypeAny>(opts: {
         }
         const output = await result.output;
         send({ type: "final", data: output });
+        await opts.onDone?.();
       } catch (error) {
         const err = errorFrom(streamError ?? error);
         console.error("AI request failed", err.status, streamError ?? error);
@@ -203,7 +213,47 @@ async function parseBody<S extends z.ZodTypeAny>(request: Request, schema: S) {
 
 const badRequest = (message: string) => Response.json({ type: "error", status: 400, message }, { status: 400 });
 
+/** Anonymous visitors get this; the app shows the sign-in screen instead of a score. */
+const signInRequired = () =>
+  Response.json(
+    {
+      type: "error",
+      status: 401,
+      code: "sign_in",
+      message: "Please sign in to score your resume. Creating an account is free.",
+    },
+    { status: 401 },
+  );
+
+/** Free allowance used up; the app offers the paid plan instead of running the AI. */
+const planRequired = (message: string) =>
+  Response.json(
+    { type: "error", status: 402, code: "plan_required", message },
+    { status: 402 },
+  );
+
+/** Refuses the request unless the caller is signed in and still within their allowance. */
+async function gate(request: Request, kind: "score" | "rewrite") {
+  const session = await readSession(request);
+  if (!session) return { session: null as null, denied: signInRequired() };
+  const allowed = kind === "score" ? scoreAllowed(session.entitlement) : rewriteAllowed(session.entitlement);
+  if (!allowed) {
+    const denied =
+      kind === "score"
+        ? planRequired(
+            `You've used your ${FREE_MONTHLY_SCORES} free score reports this month. A plan unlocks unlimited reports.`,
+          )
+        : planRequired(
+            `You've used your ${FREE_MONTHLY_REWRITES} free rewrite this month. A plan unlocks unlimited rewrites.`,
+          );
+    return { session: null as null, denied };
+  }
+  return { session, denied: null as Response | null };
+}
+
 export async function handleAnalyze(request: Request) {
+  const access = await gate(request, "score");
+  if (access.denied) return access.denied;
   const input = await parseBody(request, analyzeRequestSchema);
   if (!input) return badRequest("Please add a job description (at least a few lines) and your resume.");
   const ctx = atsContext(input.atsId);
@@ -236,10 +286,19 @@ TASK: STEP 1 - PRE-APPLICATION SCORECARD. Do not rewrite anything. Evaluate the 
     } as ModelMessage,
   ];
 
-  return streamObject({ request, schema: reportSchema, system, messages, maxOutputTokens: 20000 });
+  return streamObject({
+    request,
+    schema: reportSchema,
+    system,
+    messages,
+    maxOutputTokens: 20000,
+    onDone: () => recordUsage(access.session!.supabase, "score"),
+  });
 }
 
 export async function handleRewrite(request: Request) {
+  const access = await gate(request, "rewrite");
+  if (access.denied) return access.denied;
   const input = await parseBody(request, rewriteRequestSchema);
   if (!input) return badRequest("Something was missing from the rewrite request. Please start again.");
   const ctx = atsContext(input.atsId);
@@ -295,5 +354,12 @@ TASK: STEP 2 - REWRITE. Edit, fix or rewrite the resume so it parses cleanly in 
     } as ModelMessage,
   ];
 
-  return streamObject({ request, schema: rewriteSchema, system, messages, maxOutputTokens: 32000 });
+  return streamObject({
+    request,
+    schema: rewriteSchema,
+    system,
+    messages,
+    maxOutputTokens: 32000,
+    onDone: () => recordUsage(access.session!.supabase, "rewrite"),
+  });
 }

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Briefcase, FileUp, Gauge, Square } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -11,9 +11,11 @@ import { RewriteView } from "@/components/resume/RewriteView";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ALL_ATS, findAts } from "@/data/ats";
+import { allowanceLine } from "@/lib/entitlements";
 import { stripMarkdown } from "@/lib/resume-markdown";
 import type { PartialReport, PartialRewrite, Report, ResumeInput, Rewrite } from "@/lib/resume-schemas";
 import { StreamRequestError, postNdjson } from "@/lib/stream-client";
+import { useSession } from "@/lib/session-context";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -41,6 +43,8 @@ type Stage = "setup" | "report" | "rewrite";
 const MIN_JD = 80;
 
 function Index() {
+  const { userId, entitlement } = useSession();
+  const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("setup");
   const [atsId, setAtsId] = useState<string | null>(null);
   const [jobDescription, setJobDescription] = useState("");
@@ -60,6 +64,12 @@ function Index() {
   const fail = (e: unknown, back: Stage) => {
     if (e instanceof DOMException && e.name === "AbortError") {
       toast("Stopped.");
+    } else if (e instanceof StreamRequestError && e.code === "sign_in") {
+      toast("Please sign in first. Creating an account is free.");
+      void navigate({ to: "/auth" });
+    } else if (e instanceof StreamRequestError && e.code === "plan_required") {
+      toast.error(e.message);
+      void navigate({ to: "/account" });
     } else {
       const message = e instanceof StreamRequestError ? e.message : "Something went wrong. Please try again.";
       toast.error(message);
@@ -143,6 +153,19 @@ function Index() {
           <Logo />
         </button>
         <div className="flex items-center gap-2">
+          {userId ? (
+            <Link to="/account">
+              <Button variant="outline" size="sm">
+                Your plan
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" size="sm">
+                Sign in
+              </Button>
+            </Link>
+          )}
           {loading && (
             <Button variant="outline" size="sm" onClick={() => abortRef.current?.abort()}>
               <Square className="size-3" /> Stop
@@ -168,6 +191,7 @@ function Index() {
             ready={ready}
             onAnalyze={analyze}
             jdRef={jdRef}
+            allowance={allowanceLine(entitlement, "score")}
           />
         )}
         {stage === "report" && ats && (
@@ -198,6 +222,7 @@ function Setup(props: {
   ready: boolean;
   onAnalyze: () => void;
   jdRef: React.RefObject<HTMLDivElement | null>;
+  allowance: string;
 }) {
   const jdLen = props.jobDescription.trim().length;
   const done: [boolean, boolean, boolean] = [!!props.atsId, jdLen >= MIN_JD, !!props.resume];
@@ -252,7 +277,7 @@ function Setup(props: {
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             {props.ready
-              ? "Takes about 30 seconds. Nothing is saved after you leave."
+              ? `Takes about 30 seconds. ${props.allowance}. Your resume is never stored.`
               : `${done.filter(Boolean).length} of 3 steps done`}
           </p>
         </div>
