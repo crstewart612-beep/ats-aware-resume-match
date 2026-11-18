@@ -5,6 +5,7 @@
 - [x] Scorecard: score now vs best possible, verdict, requirement map, ATS checks, knockout risks, gap plan
 - [x] Clarifying questions → rewrite → new score and report, Word download, pre-submit checklist
 - [ ] Subscription service (owner chose this Nov 18): 7-day free trial, then charged monthly, Paddle confirmed, launch price $19/mo
+  - ON HOLD: owner asked (Nov 18, 20:12 UTC) to avoid ongoing cost and responsibility, and may switch to a one-time purchase. Waiting on her choice of payment model before creating the product or checkout.
   - [x] Customer sign-in (email + Google) and account page
   - [x] Gate scoring and rewrite behind an account; count monthly usage
   - [ ] 7-day trial model: is_paid honours trial_ends_at, trial days left shown in the app
