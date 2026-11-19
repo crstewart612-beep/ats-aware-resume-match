@@ -39,7 +39,7 @@ function AccountPage() {
   const waitForCode = useCallback(
     async (transactionId: string) => {
       setWaiting(true);
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 100; i++) {
         // A dropped connection just means "try again in a moment".
         const c = await codeForPayment({ data: { transactionId } }).then((r) => r.code, () => null);
         if (c) {
@@ -132,7 +132,7 @@ function AccountPage() {
           {waiting && (
             <Panel>
               <h1 className="font-display text-2xl font-semibold">Creating your access code...</h1>
-              <p className="mt-2 text-sm text-muted-foreground">This takes a few seconds. Please keep this page open.</p>
+              <p className="mt-2 text-sm text-muted-foreground">This can take up to a few minutes. Please keep this page open.</p>
             </Panel>
           )}
 
