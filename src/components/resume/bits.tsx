@@ -13,7 +13,7 @@ export function Logo({ className }: { className?: string }) {
           <path d="M10 13l2 2 4-4" />
         </svg>
       </span>
-      <span className="font-display text-xl font-semibold tracking-tight">ResumeMatch</span>
+      <span className="font-display text-xl font-semibold tracking-tight">Resume Match</span>
     </span>
   );
 }
@@ -78,10 +78,13 @@ export function ScoreRing({
           />
         </svg>
         <div className="absolute inset-0 grid place-items-center text-center">
-          {label ? (
-            <span className={cn("font-display px-4 leading-tight font-semibold", label.length > 6 ? "text-2xl" : "text-5xl")}>
-              {label}
-            </span>
+          {percent !== undefined ? (
+            <div className="flex flex-col items-center px-4">
+              <span className="font-display text-5xl leading-tight font-semibold">{pct}%</span>
+              {label && label !== `${pct}%` && (
+                <span className="text-xs font-medium text-muted-foreground">{label}</span>
+              )}
+            </div>
           ) : (
             <span className="h-8 w-16 rounded-full shimmer-line" />
           )}

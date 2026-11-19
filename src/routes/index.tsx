@@ -223,7 +223,7 @@ function Index() {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-        <button type="button" onClick={startOver} aria-label="ResumeMatch home">
+        <button type="button" onClick={startOver} aria-label="Resume Match home">
           <Logo />
         </button>
         <div className="flex items-center gap-2">
