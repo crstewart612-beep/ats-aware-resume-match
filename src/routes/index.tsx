@@ -24,16 +24,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Resume Match: Know your ATS score before you apply" },
+      { title: "Resume Match: Resume feedback and writing help for job seekers" },
       {
         name: "description",
         content:
-          "Choose the employer's hiring system, paste the job description and attach your resume. Get an honest score, a gap report and a rewrite.",
+          "Choose the employer's hiring system, paste the job description and attach your resume. Get an estimated match score, written feedback and suggested edits based only on your real experience.",
       },
-      { property: "og:title", content: "Resume Match: Know your ATS score before you apply" },
+      { property: "og:title", content: "Resume Match: Resume feedback and writing help for job seekers" },
       {
         property: "og:description",
-        content: "An honest resume score for Workday, Greenhouse, Taleo, iCIMS and 13 more hiring systems.",
+        content: "A resume feedback and writing tool that compares your resume to a job description.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -316,14 +316,14 @@ function Setup(props: {
           C → B after rewrite
         </div>
         <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-card/70 px-4 py-1.5 text-sm font-semibold text-primary">
-          <Gauge className="size-4" /> {ALL_ATS.length - 1} hiring systems, one honest score
+          <Gauge className="size-4" /> {ALL_ATS.length - 1} hiring system styles, clear resume feedback
         </p>
         <h1 className="mx-auto max-w-3xl text-4xl leading-[1.08] font-medium sm:text-6xl">
           Know your score before you hit <em className="text-primary not-italic underline decoration-accent decoration-4 underline-offset-8 [text-decoration-skip-ink:none]">Apply</em>.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-foreground/75">
-          See exactly where your resume meets the job, and where it doesn't, on the system the employer actually
-          uses. Then get a truthful rewrite and a new score.
+          Resume Match is a resume feedback and writing tool. Compare your resume to a job description, see an
+          estimated match score and get suggested edits that use only your real experience.
         </p>
       </section>
 
@@ -376,6 +376,10 @@ function Setup(props: {
           </ul>
           <p className="mt-5 text-xs text-muted-foreground">
             Your before score is free. Pay only when you want the full report.
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Scores are estimates for guidance only. Resume Match is not affiliated with any hiring system or employer
+            and does not guarantee interviews or job offers. Sold by Charlene Brooks.
           </p>
         </section>
       </div>
