@@ -3,7 +3,7 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useRouter,
+
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -40,7 +40,6 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
-  const router = useRouter();
   useEffect(() => {
     const msg = String((error as Error)?.message ?? error);
     // Stale page files after an update: reload once to fetch the new version.
