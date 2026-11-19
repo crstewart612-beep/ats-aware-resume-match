@@ -101,6 +101,9 @@ function Index() {
       toast("Stopped.");
     } else if (e instanceof StreamRequestError && (e.code === "plan_required" || e.code === "bad_code")) {
       toast.error(e.message);
+      if (back === "setup") {
+        try { sessionStorage.setItem(AUTORUN_KEY, "1"); } catch { /* ignore */ }
+      }
       void navigate({ to: "/account" });
     } else {
       const message = e instanceof StreamRequestError ? e.message : "Something went wrong. Please try again.";
