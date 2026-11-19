@@ -26,5 +26,10 @@ if (typeof window !== "undefined") {
     sessionStorage.setItem("rm_reloaded", "1");
     window.location.reload();
   });
-  window.addEventListener("load", () => setTimeout(() => sessionStorage.removeItem("rm_reloaded"), 10000));
+  window.addEventListener("load", () =>
+    setTimeout(() => {
+      sessionStorage.removeItem("rm_reloaded");
+      sessionStorage.removeItem("rm_load_retries");
+    }, 10000),
+  );
 }

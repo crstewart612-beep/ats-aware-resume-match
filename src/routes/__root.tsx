@@ -8,7 +8,7 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import { AccessProvider } from "@/lib/access-context";
@@ -38,18 +38,37 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
+const LOAD_ERROR = /module script|dynamically imported module|Load failed|Failed to fetch|error loading/i;
+const RETRY_KEY = "rm_load_retries";
+
+function ErrorComponent({ error }: ErrorComponentProps) {
   console.error(error);
+  const msg = String((error as Error)?.message ?? error);
+  const isLoadError = LOAD_ERROR.test(msg);
+  const [retrying, setRetrying] = useState(isLoadError);
   useEffect(() => {
-    const msg = String((error as Error)?.message ?? error);
-    // Stale page files after an update: reload once to fetch the new version.
-    if (/module script|dynamically imported module|Load failed|Failed to fetch/i.test(msg) && !sessionStorage.getItem("rm_reloaded")) {
-      sessionStorage.setItem("rm_reloaded", "1");
-      window.location.reload();
-      return;
+    if (isLoadError) {
+      // A page file failed to download (seen in Safari on the preview). Retry a few
+      // times with a short pause before showing the error page.
+      const tries = Number(sessionStorage.getItem(RETRY_KEY) ?? "0");
+      if (tries < 3) {
+        sessionStorage.setItem(RETRY_KEY, String(tries + 1));
+        const t = setTimeout(() => window.location.reload(), 600 * (tries + 1));
+        return () => clearTimeout(t);
+      }
+      sessionStorage.removeItem(RETRY_KEY);
+      setRetrying(false);
     }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+  }, [error, isLoadError]);
+
+  if (retrying) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -63,7 +82,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
-              sessionStorage.removeItem("rm_reloaded");
+              sessionStorage.removeItem(RETRY_KEY);
               window.location.reload();
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
