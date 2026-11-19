@@ -154,7 +154,7 @@ function UnlockCard({ ats, onUnlocked }: { ats: AtsSystem; onUnlocked: () => voi
         <>
           <ul className="mt-4 space-y-2 text-left text-sm">
             {[
-              "Your real score on this hiring system's own scale",
+              "Your real percentage score for this hiring system",
               "Every requirement checked, plus what to fix",
               "A truthful rewrite with your new score and a Word download",
               `${PACK_REPORTS} reports for any jobs you apply to, they never expire`,
