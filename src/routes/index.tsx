@@ -15,6 +15,7 @@ import { ALL_ATS, findAts } from "@/data/ats";
 import { stripMarkdown } from "@/lib/resume-markdown";
 import type { PartialReport, PartialRewrite, Report, ResumeInput, Rewrite } from "@/lib/resume-schemas";
 import { StreamRequestError, postNdjson } from "@/lib/stream-client";
+import { LegalFooter } from "@/components/LegalLayout";
 import { useAccess } from "@/lib/access-context";
 import { PENDING_KEY } from "@/lib/use-pack-purchase";
 import { cn } from "@/lib/utils";
@@ -285,6 +286,7 @@ function Index() {
           <RewriteView rewrite={rewrite} loading={loading} ats={ats} onAnotherJob={anotherJob} onStartOver={startOver} />
         )}
       </main>
+      <LegalFooter />
     </div>
   );
 }

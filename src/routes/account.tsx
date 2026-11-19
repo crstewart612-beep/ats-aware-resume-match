@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Logo } from "@/components/resume/bits";
+import { LegalFooter } from "@/components/LegalLayout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -232,6 +233,7 @@ function AccountPage() {
             We keep only your access code and how many reports it has used. Your resume and job descriptions are never stored.
           </p>
         </main>
+        <LegalFooter />
       </div>
     </div>
   );

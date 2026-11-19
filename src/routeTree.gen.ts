@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ApiAnalyzeRouteImport } from './routes/api/analyze'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -23,6 +26,21 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAnalyzeRoute = ApiAnalyzeRouteImport.update({
@@ -45,6 +63,9 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/terms': typeof TermsRoute
   '/api/analyze': typeof ApiAnalyzeRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -52,6 +73,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/terms': typeof TermsRoute
   '/api/analyze': typeof ApiAnalyzeRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -60,6 +84,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/terms': typeof TermsRoute
   '/api/analyze': typeof ApiAnalyzeRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -69,6 +96,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/privacy'
+    | '/refund-policy'
+    | '/terms'
     | '/api/analyze'
     | '/api/rewrite'
     | '/api/public/payments/webhook'
@@ -76,6 +106,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/privacy'
+    | '/refund-policy'
+    | '/terms'
     | '/api/analyze'
     | '/api/rewrite'
     | '/api/public/payments/webhook'
@@ -83,6 +116,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
+    | '/privacy'
+    | '/refund-policy'
+    | '/terms'
     | '/api/analyze'
     | '/api/rewrite'
     | '/api/public/payments/webhook'
@@ -91,6 +127,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
+  TermsRoute: typeof TermsRoute
   ApiAnalyzeRoute: typeof ApiAnalyzeRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -110,6 +149,27 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/analyze': {
@@ -139,6 +199,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  PrivacyRoute: PrivacyRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
+  TermsRoute: TermsRoute,
   ApiAnalyzeRoute: ApiAnalyzeRoute,
   ApiRewriteRoute: ApiRewriteRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
