@@ -103,7 +103,8 @@ function AccountPage() {
       return;
     }
     setEntry("");
-    toast.success("Code added.");
+    setNewCode(null);
+    toast.success("Code added. Your reports are ready.");
   };
 
   const copy = async (c: string) => {
@@ -136,12 +137,12 @@ function AccountPage() {
             </Panel>
           )}
 
-          {(newCode ?? code) && (
+          {(code ?? newCode) && (
             <Panel>
               <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Your access code</p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <span className="font-mono text-3xl font-semibold tracking-wider">{newCode ?? code}</span>
-                <Button variant="outline" size="sm" onClick={() => copy((newCode ?? code)!)}>
+                <span className="font-mono text-3xl font-semibold tracking-wider">{code ?? newCode}</span>
+                <Button variant="outline" size="sm" onClick={() => copy((code ?? newCode)!)}>
                   <Copy /> Copy
                 </Button>
               </div>
@@ -154,7 +155,10 @@ function AccountPage() {
                   <Stat label="Rewrites" value={`${status.rewritesLeft} of ${status.reports} left`} />
                 </dl>
               )}
-              <button type="button" className="mt-4 text-xs text-muted-foreground underline" onClick={clearCode}>
+              <button type="button" className="mt-4 text-xs text-muted-foreground underline" onClick={() => {
+                  setNewCode(null);
+                  clearCode();
+                }}>
                 Remove code from this device
               </button>
             </Panel>
