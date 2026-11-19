@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Briefcase, FileUp, Gauge, Square } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { AtsPicker } from "@/components/resume/AtsPicker";
@@ -39,15 +39,26 @@ export const Route = createFileRoute("/")({
 });
 
 type Stage = "setup" | "report" | "rewrite";
+
+// Kept in memory only (never saved), so a customer sent to the pay page finds their entries
+// still filled in when they come back to start their report.
+const draft: { atsId: string | null; jobDescription: string; resume: ResumeInput | null } = {
+  atsId: null,
+  jobDescription: "",
+  resume: null,
+};
 const MIN_JD = 80;
 
 function Index() {
   const { allowance, refresh, status } = useAccess();
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("setup");
-  const [atsId, setAtsId] = useState<string | null>(null);
-  const [jobDescription, setJobDescription] = useState("");
-  const [resume, setResume] = useState<ResumeInput | null>(null);
+  const [atsId, setAtsId] = useState<string | null>(draft.atsId);
+  const [jobDescription, setJobDescription] = useState(draft.jobDescription);
+  const [resume, setResume] = useState<ResumeInput | null>(draft.resume);
+  useEffect(() => {
+    Object.assign(draft, { atsId, jobDescription, resume });
+  }, [atsId, jobDescription, resume]);
   const [report, setReport] = useState<PartialReport | null>(null);
   const [finalReport, setFinalReport] = useState<Report | null>(null);
   const [rewrite, setRewrite] = useState<PartialRewrite | null>(null);
