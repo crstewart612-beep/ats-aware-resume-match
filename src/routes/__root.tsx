@@ -110,13 +110,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ResumeMatch: Know your ATS score before you apply" },
+      { title: "Resume Match: Know your ATS score before you apply" },
       {
         name: "description",
         content:
           "Score your resume against the job description and the hiring system the employer uses, then get an honest AI rewrite.",
       },
-      { property: "og:title", content: "ResumeMatch: Know your ATS score before you apply" },
+      { property: "og:title", content: "Resume Match: Know your ATS score before you apply" },
       {
         property: "og:description",
         content: "Pick the hiring system, paste the job, attach your resume and see where you stand.",

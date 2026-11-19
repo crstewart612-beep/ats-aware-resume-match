@@ -17,9 +17,9 @@ const PENDING_KEY = "rm_pending_payment";
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
-      { title: "Get reports | ResumeMatch" },
-      { name: "description", content: "Buy a one-time ResumeMatch pack of 10 reports and get your access code. No account needed." },
-      { property: "og:title", content: "Get reports | ResumeMatch" },
+      { title: "Get reports | Resume Match" },
+      { name: "description", content: "Buy a one-time Resume Match pack of 10 reports and get your access code. No account needed." },
+      { property: "og:title", content: "Get reports | Resume Match" },
       { property: "og:description", content: "One payment of $19 for 10 reports. No account, nothing renews." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -1,4 +1,4 @@
-// What a customer may do. ResumeMatch sells one-time report packs; nothing renews.
+// What a customer may do. Resume Match sells one-time report packs; nothing renews.
 // Each report includes one rewrite. Only edit the numbers below.
 
 /** No free reports: every report needs a paid pack. */
@@ -8,7 +8,7 @@ export const PACK_REPORTS = 10;
 /** Human-readable price id of the pack in the payments catalog. */
 export const PACK_PRICE_ID = "resume_match_pack_10";
 
-export const PLAN_NAME = "ResumeMatch Report Pack";
+export const PLAN_NAME = "Resume Match Report Pack";
 export const PLAN_PRICE = "$19, one payment, nothing renews";
 export const PLAN_BENEFITS = [
   `${PACK_REPORTS} score reports on any hiring system`,

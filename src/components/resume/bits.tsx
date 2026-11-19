@@ -81,9 +81,6 @@ export function ScoreRing({
           {percent !== undefined ? (
             <div className="flex flex-col items-center px-4">
               <span className="font-display text-5xl leading-tight font-semibold">{pct}%</span>
-              {label && label !== `${pct}%` && (
-                <span className="text-xs font-medium text-muted-foreground">{label}</span>
-              )}
             </div>
           ) : (
             <span className="h-8 w-16 rounded-full shimmer-line" />

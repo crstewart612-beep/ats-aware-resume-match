@@ -22,13 +22,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ResumeMatch: Know your ATS score before you apply" },
+      { title: "Resume Match: Know your ATS score before you apply" },
       {
         name: "description",
         content:
           "Choose the employer's hiring system, paste the job description and attach your resume. Get an honest score, a gap report and a rewrite.",
       },
-      { property: "og:title", content: "ResumeMatch: Know your ATS score before you apply" },
+      { property: "og:title", content: "Resume Match: Know your ATS score before you apply" },
       {
         property: "og:description",
         content: "An honest resume score for Workday, Greenhouse, Taleo, iCIMS and 13 more hiring systems.",
