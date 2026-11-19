@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { AtsPicker } from "@/components/resume/AtsPicker";
+import { PreviewView } from "@/components/resume/PreviewView";
 import { Logo } from "@/components/resume/bits";
 import { ReportView } from "@/components/resume/ReportView";
 import { ResumeDrop } from "@/components/resume/ResumeDrop";
@@ -15,6 +16,7 @@ import { stripMarkdown } from "@/lib/resume-markdown";
 import type { PartialReport, PartialRewrite, Report, ResumeInput, Rewrite } from "@/lib/resume-schemas";
 import { StreamRequestError, postNdjson } from "@/lib/stream-client";
 import { useAccess } from "@/lib/access-context";
+import { PENDING_KEY } from "@/lib/use-pack-purchase";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -38,7 +40,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Stage = "setup" | "report" | "rewrite";
+type Stage = "setup" | "preview" | "report" | "rewrite";
 
 // Kept in memory only (never saved), so a customer sent to the pay page finds their entries
 // still filled in when they come back to start their report.
@@ -102,7 +104,10 @@ function Index() {
     } else if (e instanceof StreamRequestError && (e.code === "plan_required" || e.code === "bad_code")) {
       toast.error(e.message);
       if (back === "setup") {
+        // Show the free before score with the pay box instead of a separate page.
         try { sessionStorage.setItem(AUTORUN_KEY, "1"); } catch { /* ignore */ }
+        setStage("preview");
+        return;
       }
       void navigate({ to: "/account" });
     } else {
@@ -115,9 +120,11 @@ function Index() {
   const analyze = async () => {
     if (!ready || !ats || !resume) return;
     if (!status || status.scoresLeft <= 0) {
-      toast("Get your report pack to see your score.");
+      // Unpaid: show the free before score (no AI used) with the rest locked until they pay.
+      // Flag it so the full report opens by itself as soon as a code is active.
       try { sessionStorage.setItem(AUTORUN_KEY, "1"); } catch { /* ignore */ }
-      void navigate({ to: "/account" });
+      setStage("preview");
+      top();
       return;
     }
     const ctrl = new AbortController();
@@ -145,9 +152,21 @@ function Index() {
     }
   };
 
+  // Checkout reloaded the page while the code is still being created: stay on the preview.
+  useEffect(() => {
+    if (!restored || !ready) return;
+    try {
+      if (localStorage.getItem(PENDING_KEY)) {
+        sessionStorage.setItem(AUTORUN_KEY, "1");
+        setStage("preview");
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restored]);
+
   // Came back from the pay page with a working code: go straight to the report.
   useEffect(() => {
-    if (!restored || loading || stage !== "setup" || !ready || !status || status.scoresLeft <= 0) return;
+    if (!restored || loading || (stage !== "setup" && stage !== "preview") || !ready || !status || status.scoresLeft <= 0) return;
     let flag: string | null = null;
     try { flag = sessionStorage.getItem(AUTORUN_KEY); } catch { /* ignore */ }
     if (!flag) return;
@@ -240,6 +259,17 @@ function Index() {
             allowance={allowance}
           />
         )}
+        {stage === "preview" && ats && resume && (
+          <PreviewView
+            ats={ats}
+            jobDescription={jobDescription}
+            resume={resume}
+            onUnlocked={() => {
+              // The code is active; the report starts by itself once the new allowance loads.
+              try { sessionStorage.setItem(AUTORUN_KEY, "1"); } catch { /* ignore */ }
+            }}
+          />
+        )}
         {stage === "report" && ats && (
           <ReportView
             key={finalReport ? "final" : "live"}
@@ -323,7 +353,7 @@ function Setup(props: {
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             {props.ready
-              ? props.allowance === "Payment needed" ? "$19 for 10 reports, one payment. Your resume is never stored." : `Takes about 30 seconds. ${props.allowance}. Your resume is never stored.`
+              ? props.allowance === "Payment needed" ? "See your before score free. Your resume is never stored." : `Takes about 30 seconds. ${props.allowance}. Your resume is never stored.`
               : `${done.filter(Boolean).length} of 3 steps done`}
           </p>
         </div>
