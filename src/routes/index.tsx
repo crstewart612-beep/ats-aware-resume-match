@@ -16,6 +16,7 @@ import { stripMarkdown } from "@/lib/resume-markdown";
 import type { PartialReport, PartialRewrite, Report, ResumeInput, Rewrite } from "@/lib/resume-schemas";
 import { StreamRequestError, postNdjson } from "@/lib/stream-client";
 import { LegalFooter } from "@/components/LegalLayout";
+import { PLAN_BENEFITS, PLAN_NAME, PLAN_PRICE } from "@/lib/entitlements";
 import { useAccess } from "@/lib/access-context";
 import { PENDING_KEY } from "@/lib/use-pack-purchase";
 import { cn } from "@/lib/utils";
@@ -360,6 +361,23 @@ function Setup(props: {
               : `${done.filter(Boolean).length} of 3 steps done`}
           </p>
         </div>
+
+        <section className="rounded-[2rem] border bg-card p-5 text-center shadow-soft sm:p-8" aria-label="Pricing">
+          <h2 className="text-xl font-medium sm:text-2xl">{PLAN_NAME}</h2>
+          <p className="mt-2 text-3xl font-semibold text-primary">$19</p>
+          <p className="mt-1 text-sm text-muted-foreground">{PLAN_PRICE}</p>
+          <ul className="mx-auto mt-5 max-w-md space-y-2 text-left text-sm text-foreground/80">
+            {PLAN_BENEFITS.map((b) => (
+              <li key={b} className="flex items-start gap-2">
+                <span aria-hidden className="mt-0.5 text-primary">✓</span>
+                {b}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 text-xs text-muted-foreground">
+            Your before score is free. Pay only when you want the full report.
+          </p>
+        </section>
       </div>
     </>
   );
