@@ -38,7 +38,8 @@ export function AccessProvider({ children }: { children: ReactNode }) {
   }, [load]);
 
   useEffect(() => {
-    void refresh();
+    // A dropped connection (e.g. leaving the page mid-check) must not crash the app.
+    refresh().catch(() => {});
   }, [refresh]);
 
   const useCode = useCallback(
