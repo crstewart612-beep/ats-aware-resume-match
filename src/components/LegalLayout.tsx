@@ -5,7 +5,7 @@ import { Logo } from "@/components/resume/bits";
 import { Button } from "@/components/ui/button";
 
 export const SUPPORT_EMAIL = "Charlene.Stewart4@outlook.com";
-export const SELLER_NAME = "Charlene Brooks";
+export const SELLER_NAME = "Resume Match";
 
 export function LegalFooter() {
   return (

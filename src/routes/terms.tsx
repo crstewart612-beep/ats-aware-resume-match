@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegalLayout, LegalSection, SELLER_NAME, SUPPORT_EMAIL } from "@/components/LegalLayout";
+import { LegalLayout, LegalSection, SUPPORT_EMAIL } from "@/components/LegalLayout";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/terms")({
       { title: "Terms & Conditions | Resume Match" },
       {
         name: "description",
-        content: "The terms that govern your use of Resume Match, the AI resume scoring and rewrite service sold by Charlene Brooks.",
+        content: "The terms that govern your use of Resume Match, the AI resume scoring and rewrite service sold by Resume Match.",
       },
       { property: "og:title", content: "Terms & Conditions | Resume Match" },
       { property: "og:description", content: "The terms that govern your use of Resume Match." },
@@ -24,8 +24,8 @@ function TermsPage() {
     <LegalLayout title="Terms & Conditions">
       <LegalSection title="1. Who you are buying from">
         <p>
-          Resume Match is operated by {SELLER_NAME} ("we", "us", "the seller"), based in the United States. When you buy
-          or use Resume Match, your contract is with {SELLER_NAME}. You can reach us at {SUPPORT_EMAIL}.
+          Resume Match ("we", "us", "the seller") is based in the United States. When you buy
+          or use Resume Match, your contract is with Resume Match. You can reach us at {SUPPORT_EMAIL}.
         </p>
       </LegalSection>
 

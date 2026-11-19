@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegalLayout, LegalSection, SELLER_NAME, SUPPORT_EMAIL } from "@/components/LegalLayout";
+import { LegalLayout, LegalSection, SUPPORT_EMAIL } from "@/components/LegalLayout";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -24,7 +24,7 @@ function PrivacyPage() {
     <LegalLayout title="Privacy Notice">
       <LegalSection title="Who is responsible for your data">
         <p>
-          Resume Match is operated by {SELLER_NAME}, based in the United States. {SELLER_NAME} is the data
+          Resume Match is based in the United States and is the data
           controller for the personal data described in this notice. You can contact us at {SUPPORT_EMAIL}.
         </p>
       </LegalSection>

@@ -379,7 +379,7 @@ function Setup(props: {
           </p>
           <p className="mt-3 text-xs text-muted-foreground">
             Scores are estimates for guidance only. Resume Match is not affiliated with any hiring system or employer
-            and does not guarantee interviews or job offers. Sold by Charlene Brooks.
+            and does not guarantee interviews or job offers.
           </p>
         </section>
       </div>
