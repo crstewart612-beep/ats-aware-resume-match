@@ -48,6 +48,8 @@ const draft: { atsId: string | null; jobDescription: string; resume: ResumeInput
   resume: null,
 };
 const MIN_JD = 80;
+const DRAFT_KEY = "rm_draft";
+const AUTORUN_KEY = "rm_autorun";
 
 function Index() {
   const { allowance, refresh, status } = useAccess();
@@ -56,9 +58,32 @@ function Index() {
   const [atsId, setAtsId] = useState<string | null>(draft.atsId);
   const [jobDescription, setJobDescription] = useState(draft.jobDescription);
   const [resume, setResume] = useState<ResumeInput | null>(draft.resume);
+  const [restored, setRestored] = useState(false);
+  // Restore entries after the pay page (payment reloads the page, so memory alone is not enough).
+  // Kept only in this browser tab's session storage, which the browser clears when the tab closes.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (raw && !draft.jobDescription && !draft.resume) {
+        const d = JSON.parse(raw);
+        setAtsId(d.atsId ?? null);
+        setJobDescription(d.jobDescription ?? "");
+        setResume(d.resume ?? null);
+      }
+    } catch {
+      /* ignore */
+    }
+    setRestored(true);
+  }, []);
   useEffect(() => {
     Object.assign(draft, { atsId, jobDescription, resume });
-  }, [atsId, jobDescription, resume]);
+    if (!restored) return;
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ atsId, jobDescription, resume }));
+    } catch {
+      /* too large or blocked; memory copy still works */
+    }
+  }, [atsId, jobDescription, resume, restored]);
   const [report, setReport] = useState<PartialReport | null>(null);
   const [finalReport, setFinalReport] = useState<Report | null>(null);
   const [rewrite, setRewrite] = useState<PartialRewrite | null>(null);
@@ -88,6 +113,7 @@ function Index() {
     if (!ready || !ats || !resume) return;
     if (!status || status.scoresLeft <= 0) {
       toast("Get your report pack to see your score.");
+      try { sessionStorage.setItem(AUTORUN_KEY, "1"); } catch { /* ignore */ }
       void navigate({ to: "/account" });
       return;
     }
@@ -115,6 +141,17 @@ function Index() {
       refresh().catch(() => {});
     }
   };
+
+  // Came back from the pay page with a working code: go straight to the report.
+  useEffect(() => {
+    if (!restored || loading || stage !== "setup" || !ready || !status || status.scoresLeft <= 0) return;
+    let flag: string | null = null;
+    try { flag = sessionStorage.getItem(AUTORUN_KEY); } catch { /* ignore */ }
+    if (!flag) return;
+    try { sessionStorage.removeItem(AUTORUN_KEY); } catch { /* ignore */ }
+    void analyze();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restored, ready, status, stage, loading]);
 
   const runRewrite = async (answers: { question: string; answer: string }[]) => {
     if (!ats || !resume || !finalReport) return;
