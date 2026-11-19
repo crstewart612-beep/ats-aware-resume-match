@@ -42,6 +42,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    const msg = String((error as Error)?.message ?? error);
+    // Stale page files after an update: reload once to fetch the new version.
+    if (/module script|dynamically imported module|Load failed|Failed to fetch/i.test(msg) && !sessionStorage.getItem("rm_reloaded")) {
+      sessionStorage.setItem("rm_reloaded", "1");
+      window.location.reload();
+      return;
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
@@ -57,8 +64,8 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
-              router.invalidate();
-              reset();
+              sessionStorage.removeItem("rm_reloaded");
+              window.location.reload();
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
