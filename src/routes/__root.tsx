@@ -60,6 +60,7 @@ function ErrorComponent({ error }: ErrorComponentProps) {
       setRetrying(false);
     }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    return undefined;
   }, [error, isLoadError]);
 
   if (retrying) {

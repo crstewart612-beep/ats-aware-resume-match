@@ -25,7 +25,12 @@ export function ResumeDrop({
     try {
       onChange(await readResumeFile(file));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "We couldn't read that file.");
+      const msg = e instanceof Error ? e.message : "";
+      toast.error(
+        /module script|dynamically imported module|Load failed|Failed to fetch/i.test(msg)
+          ? "We couldn't open that file just now. Please try again."
+          : msg || "We couldn't read that file.",
+      );
     } finally {
       setBusy(false);
     }
