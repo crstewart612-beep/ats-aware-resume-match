@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy, KeyRound, ShoppingBag } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ function AccountPage() {
   const [waiting, setWaiting] = useState(false);
   const [entry, setEntry] = useState("");
   const [newCode, setNewCode] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // After paying, the code is created a few seconds later; check until it appears.
   const waitForCode = useCallback(
@@ -105,6 +106,7 @@ function AccountPage() {
     setEntry("");
     setNewCode(null);
     toast.success("Code added. Your reports are ready.");
+    void navigate({ to: "/" });
   };
 
   const copy = async (c: string) => {
@@ -155,6 +157,12 @@ function AccountPage() {
                   <Stat label="Rewrites" value={`${status.rewritesLeft} of ${status.reports} left`} />
                 </dl>
               )}
+              <Button size="lg" className="mt-5" asChild>
+                <Link to="/">
+                  Start my report <ArrowRight />
+                </Link>
+              </Button>
+              <br />
               <button type="button" className="mt-4 text-xs text-muted-foreground underline" onClick={() => {
                   setNewCode(null);
                   clearCode();
