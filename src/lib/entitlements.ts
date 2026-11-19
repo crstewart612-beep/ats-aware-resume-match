@@ -1,8 +1,8 @@
 // What a customer may do. ResumeMatch sells one-time report packs; nothing renews.
 // Each report includes one rewrite. Only edit the numbers below.
 
-/** Reports every visitor gets once, free, to try the app. */
-export const FREE_REPORTS = 1;
+/** No free reports: every report needs a paid pack. */
+export const FREE_REPORTS = 0;
 /** Reports added by one pack. */
 export const PACK_REPORTS = 10;
 /** Human-readable price id of the pack in the payments catalog. */

@@ -158,7 +158,7 @@ function AccountPage() {
             <Panel>
               <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Your reports</p>
               <h1 className="mt-1 font-display text-3xl font-semibold">{allowance || "\u00a0"}</h1>
-              <p className="mt-2 text-sm text-muted-foreground">Your first report and rewrite are free. No account needed.</p>
+              <p className="mt-2 text-sm text-muted-foreground">One payment of $19 for 10 reports. No account needed.</p>
             </Panel>
           )}
 

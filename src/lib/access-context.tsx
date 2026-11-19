@@ -59,7 +59,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     ? ""
     : code
       ? `${status.scoresLeft} of ${status.reports} reports left`
-      : `${status.scoresLeft} of ${status.reports} free report left`;
+      : "Payment needed";
 
   return <Ctx.Provider value={{ code, status, allowance, refresh, useCode, clearCode }}>{children}</Ctx.Provider>;
 }

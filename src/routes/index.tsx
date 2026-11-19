@@ -42,7 +42,7 @@ type Stage = "setup" | "report" | "rewrite";
 const MIN_JD = 80;
 
 function Index() {
-  const { allowance, refresh } = useAccess();
+  const { allowance, refresh, status } = useAccess();
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("setup");
   const [atsId, setAtsId] = useState<string | null>(null);
@@ -75,6 +75,11 @@ function Index() {
 
   const analyze = async () => {
     if (!ready || !ats || !resume) return;
+    if (!status || status.scoresLeft <= 0) {
+      toast("Get your report pack to see your score.");
+      void navigate({ to: "/account" });
+      return;
+    }
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setReport(null);
@@ -267,7 +272,7 @@ function Setup(props: {
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             {props.ready
-              ? `Takes about 30 seconds. ${props.allowance}. Your resume is never stored.`
+              ? props.allowance === "Payment needed" ? "$19 for 10 reports, one payment. Your resume is never stored." : `Takes about 30 seconds. ${props.allowance}. Your resume is never stored.`
               : `${done.filter(Boolean).length} of 3 steps done`}
           </p>
         </div>

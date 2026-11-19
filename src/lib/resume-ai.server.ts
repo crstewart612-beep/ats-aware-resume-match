@@ -231,7 +231,7 @@ async function gate(request: Request, kind: "score" | "rewrite") {
   if (state === "used_up") {
     const msg = access.code
       ? "This access code has no reports left. A new pack adds 10 more, each with a rewrite."
-      : "You've used your free report. A one-time pack adds 10 reports, each with a rewrite.";
+      : "Get your score with a one-time pack: 10 reports, each with a rewrite.";
     return { access: null, denied: planRequired(msg) };
   }
   return { access, denied: null as Response | null };
