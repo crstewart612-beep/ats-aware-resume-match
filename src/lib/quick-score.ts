@@ -28,7 +28,7 @@ export function jobTerms(jd: string, limit = 24): string[] {
   const counts = new Map<string, number>();
   const add = (t: string, n = 1) => counts.set(t, (counts.get(t) ?? 0) + n);
   for (let i = 0; i < w.length; i++) {
-    const a = w[i];
+    const a = w[i] ?? "";
     const keepA = !STOP.has(a) && (a.length >= 3 || /[+#]/.test(a)) && !/^\d+$/.test(a);
     if (keepA) add(a);
     const b = w[i + 1];

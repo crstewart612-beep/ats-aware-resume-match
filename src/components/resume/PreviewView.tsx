@@ -127,8 +127,14 @@ function UnlockCard({ ats, onUnlocked }: { ats: AtsSystem; onUnlocked: () => voi
 
   const enter = async () => {
     const ok = await useCode(entry).catch(() => null);
-    if (ok === null) return toast.error("We couldn't reach the server. Check your connection and try again.");
-    if (!ok) return toast.error("That code wasn't found. Check the letters and try again.");
+    if (ok === null) {
+      toast.error("We couldn't reach the server. Check your connection and try again.");
+      return;
+    }
+    if (!ok) {
+      toast.error("That code wasn't found. Check the letters and try again.");
+      return;
+    }
     setEntry("");
     toast.success("Code added. Opening your full report.");
     onUnlocked();
