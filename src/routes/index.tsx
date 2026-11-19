@@ -102,14 +102,15 @@ function Index() {
     if (e instanceof DOMException && e.name === "AbortError") {
       toast("Stopped.");
     } else if (e instanceof StreamRequestError && (e.code === "plan_required" || e.code === "bad_code")) {
-      toast.error(e.message);
       if (back === "setup") {
+        toast.error(e.message);
         // Show the free before score with the pay box instead of a separate page.
         try { sessionStorage.setItem(AUTORUN_KEY, "1"); } catch { /* ignore */ }
         setStage("preview");
         return;
       }
-      void navigate({ to: "/account" });
+      // Out of rewrites: keep the scorecard on screen and let them choose to buy more.
+      toast(e.message, { action: { label: "Get reports", onClick: () => void navigate({ to: "/account" }) } });
     } else {
       const message = e instanceof StreamRequestError ? e.message : "Something went wrong. Please try again.";
       toast.error(message);
