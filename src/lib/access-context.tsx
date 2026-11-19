@@ -53,7 +53,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
 
   const clearCode = useCallback(() => {
     forgetCode();
-    void load(null);
+    load(null).catch(() => {});
   }, [load]);
 
   const allowance = !status

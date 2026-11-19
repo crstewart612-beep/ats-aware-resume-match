@@ -101,7 +101,7 @@ function Index() {
       fail(e, "setup");
     } finally {
       setLoading(false);
-      void refresh();
+      refresh().catch(() => {});
     }
   };
 
@@ -125,7 +125,7 @@ function Index() {
       fail(e, "report");
     } finally {
       setLoading(false);
-      void refresh();
+      refresh().catch(() => {});
     }
   };
 

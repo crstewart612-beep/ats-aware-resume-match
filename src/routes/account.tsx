@@ -40,7 +40,8 @@ function AccountPage() {
     async (transactionId: string) => {
       setWaiting(true);
       for (let i = 0; i < 20; i++) {
-        const { code: c } = await codeForPayment({ data: { transactionId } });
+        // A dropped connection just means "try again in a moment".
+        const c = await codeForPayment({ data: { transactionId } }).then((r) => r.code, () => null);
         if (c) {
           sessionStorage.removeItem(PENDING_KEY);
           await useCode(c);
@@ -92,7 +93,12 @@ function AccountPage() {
   };
 
   const enter = async () => {
-    if (!(await useCode(entry))) {
+    const ok = await useCode(entry).catch(() => null);
+    if (ok === null) {
+      toast.error("We couldn't reach the server. Check your connection and try again.");
+      return;
+    }
+    if (!ok) {
       toast.error("That code wasn't found. Check the letters and try again.");
       return;
     }
