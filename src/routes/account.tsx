@@ -43,7 +43,7 @@ function AccountPage() {
         // A dropped connection just means "try again in a moment".
         const c = await codeForPayment({ data: { transactionId } }).then((r) => r.code, () => null);
         if (c) {
-          sessionStorage.removeItem(PENDING_KEY);
+          localStorage.removeItem(PENDING_KEY);
           await useCode(c);
           setNewCode(c);
           setWaiting(false);
@@ -59,7 +59,7 @@ function AccountPage() {
   );
 
   useEffect(() => {
-    const pending = sessionStorage.getItem(PENDING_KEY);
+    const pending = localStorage.getItem(PENDING_KEY);
     if (pending) void waitForCode(pending);
   }, [waitForCode]);
 
@@ -70,7 +70,7 @@ function AccountPage() {
       window.Paddle.Update({
         eventCallback: (e: any) => {
           if (e?.name === "checkout.completed" && e.data?.transaction_id) {
-            sessionStorage.setItem(PENDING_KEY, e.data.transaction_id);
+            localStorage.setItem(PENDING_KEY, e.data.transaction_id);
             window.Paddle.Checkout.close();
             void waitForCode(e.data.transaction_id);
           }
