@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+  # Nitro's Netlify adapter writes static files here and the server function
+  # to .netlify/functions-internal automatically.
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"

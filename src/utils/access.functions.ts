@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
 import { codeStatus, freeStatus, newCode, normalizeCode } from "@/lib/access.server";
-import { PACK_PRICE_ID, PACK_REPORTS } from "@/lib/entitlements";
-import { gatewayFetch, paymentsEnvFor } from "@/lib/paddle.server";
+import { PACK_REPORTS } from "@/lib/entitlements";
+import { gatewayFetch, packPriceId, paymentsEnvFor } from "@/lib/paddle.server";
 
 export const checkAccess = createServerFn({ method: "POST" })
   .inputValidator((d: { code: string | null; device: string }) => d)
@@ -36,9 +36,9 @@ export const codeForPayment = createServerFn({ method: "POST" })
       const env = paymentsEnvFor(getRequest());
       const txn: any = (await (await gatewayFetch(env, `/transactions/${data.transactionId}`)).json())?.data;
       if (!txn || !["completed", "paid"].includes(txn.status)) return { code: null };
-      const price: any = (await (await gatewayFetch(env, `/prices?external_id=${encodeURIComponent(PACK_PRICE_ID)}`)).json())?.data?.[0];
+      const priceId = packPriceId(env);
       const qty = (txn.items ?? [])
-        .filter((i: any) => (i?.price?.id ?? i?.price_id) === price?.id)
+        .filter((i: any) => (i?.price?.id ?? i?.price_id) === priceId)
         .reduce((n: number, i: any) => n + Number(i?.quantity ?? 1), 0);
       if (!qty) return { code: null };
       await supabaseAdmin.from("access_codes").upsert(

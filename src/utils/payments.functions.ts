@@ -1,16 +1,9 @@
-// Server function: turns a human-readable price id into the provider's internal id.
+// Server function: returns Paddle's price id for the pack in the server's payments environment.
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 
-import { gatewayFetch, type PaddleEnv } from "@/lib/paddle.server";
+import { packPriceId, paymentsEnvFor, type PaddleEnv } from "@/lib/paddle.server";
 
 export const resolvePaddlePrice = createServerFn({ method: "GET" })
   .inputValidator((data: { priceId: string; environment: PaddleEnv }) => data)
-  .handler(async ({ data }) => {
-    const response = await gatewayFetch(
-      data.environment,
-      `/prices?external_id=${encodeURIComponent(data.priceId)}`,
-    );
-    const result = await response.json();
-    if (!result.data?.length) throw new Error("Price not found");
-    return result.data[0].id;
-  });
+  .handler(async () => packPriceId(paymentsEnvFor(getRequest())));

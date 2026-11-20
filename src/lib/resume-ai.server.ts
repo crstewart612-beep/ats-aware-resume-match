@@ -1,11 +1,10 @@
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { APICallError, NoObjectGeneratedError, Output, streamText, type ModelMessage } from "ai";
 import type { z } from "zod";
 
 import { findAts } from "@/data/ats";
 import { ATS_RULES, UNIVERSAL_RULES } from "@/lib/ats-rules.server";
 import { rewriteAllowed, scoreAllowed } from "@/lib/entitlements";
-import { createLovableAiGatewayRunIdFetch, withLovableAiGatewayRunIdHeader } from "@/lib/run-id.server";
 import {
   analyzeRequestSchema,
   reportSchema,
@@ -15,8 +14,7 @@ import {
 } from "@/lib/resume-schemas";
 import { allowed, consume, readAccess } from "@/lib/access.server";
 
-const MODEL = "anthropic/claude-sonnet-5";
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
+const MODEL = "gemini-2.5-flash";
 
 const SCORE_MAPPING = `Map the score to 0-100 for the "percent" field so it can be drawn as a ring:
 - Letter grades: A=92, B=75, C=50, D=20.
@@ -83,7 +81,6 @@ function resumeParts(resume: ResumeInput): ModelMessage["content"] {
   ];
 }
 
-type Gateway = ReturnType<typeof createLovableAiGatewayRunIdFetch>;
 
 function errorFrom(error: unknown): { status: number; message: string } {
   if (APICallError.isInstance(error)) {
@@ -96,7 +93,7 @@ function errorFrom(error: unknown): { status: number; message: string } {
       message = "";
     }
     if (status === 402)
-      return { status, message: message || "AI credits have run out. Add credits to keep scoring resumes." };
+      return { status, message: message || "The AI service quota has run out. Please try again later." };
     if (status === 429)
       return { status, message: "We're a little busy right now. Please wait a minute and try again." };
     if (status === 403)
@@ -124,17 +121,11 @@ function streamObject<S extends z.ZodTypeAny>(opts: {
   /** Runs once the answer is complete and delivered, so a failed call is never charged. */
   onDone?: () => Promise<unknown> | void;
 }) {
-  const apiKey = process.env['LOVABLE_API_KEY'];
+  const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) {
     return Response.json({ type: "error", status: 500, message: "The AI service isn't configured yet." }, { status: 500 });
   }
-  const gateway: Gateway = createLovableAiGatewayRunIdFetch();
-  const anthropic = createAnthropic({
-    baseURL: GATEWAY_URL,
-    apiKey,
-    headers: { "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: gateway.fetch,
-  });
+  const google = createGoogleGenerativeAI({ apiKey });
 
   const encoder = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
@@ -144,14 +135,13 @@ function streamObject<S extends z.ZodTypeAny>(opts: {
       let streamError: unknown = null;
       try {
         const result = streamText({
-          model: anthropic(MODEL),
+          model: google(MODEL),
           system: opts.system,
           messages: opts.messages,
           maxOutputTokens: opts.maxOutputTokens,
           maxRetries: 0,
           abortSignal: opts.request.signal,
           output: Output.object({ schema: opts.schema }),
-          providerOptions: { anthropic: { effort: "medium" } },
           onError: ({ error }) => {
             streamError = error;
           },
@@ -184,17 +174,12 @@ function streamObject<S extends z.ZodTypeAny>(opts: {
     },
   });
 
-  return withLovableAiGatewayRunIdHeader(
-    new Response(body, {
+  return new Response(body, {
       headers: {
         "Content-Type": "application/x-ndjson; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
       },
-    }),
-    gateway,
-    undefined,
-    { waitForUpstreamHeaders: false },
-  );
+    });
 }
 
 async function parseBody<S extends z.ZodTypeAny>(request: Request, schema: S) {

@@ -2,20 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PACK_PRICE_ID, PACK_REPORTS } from "@/lib/entitlements";
 import { newCode } from "@/lib/access.server";
-import { EventName, gatewayFetch, verifyWebhook, type PaddleEnv } from "@/lib/paddle.server";
+import { EventName, packPriceId, verifyWebhook, type PaddleEnv } from "@/lib/paddle.server";
 
-// Webhook items often omit the human-readable price id, so also match the provider's own id for the pack.
-async function packPriceId(env: PaddleEnv): Promise<string | null> {
-  const r = await gatewayFetch(env, `/prices?external_id=${encodeURIComponent(PACK_PRICE_ID)}`);
-  const j: any = await r.json();
-  return j?.data?.[0]?.id ?? null;
-}
 
 // Public on purpose: the payments provider calls it. Every request's signature is verified
 // before anything is written.
 async function handleTransactionCompleted(data: any, env: PaddleEnv) {
   const items: any[] = data?.items ?? [];
-  const rawId = await packPriceId(env);
+  const rawId = packPriceId(env);
   const packs = items.filter(
     (i) => i?.price?.importMeta?.externalId === PACK_PRICE_ID || (rawId && (i?.price?.id ?? i?.priceId) === rawId),
   );

@@ -37,3 +37,5 @@ use the editor.
 - No accounts or storage: resumes and reports live in page state only, so nothing personal is persisted.
 - Customers have no accounts: a paid pack is an access code created by the payments webhook, sent by the browser as X-Access-Code; the free report is tracked per browser id (X-Device-Id). Limits are enforced server-side in `src/lib/access.server.ts` so the app never needs sign-in.
 - The free "before score" for unpaid visitors is a keyword match computed in the browser (`src/lib/quick-score.ts`, PDFs read with pdfjs-dist) so unpaid use never calls AI.
+- AI goes directly to Google Gemini (GEMINI_API_KEY) and payments directly to Paddle's API with the owner's own keys and price ids from env vars, because the app is self-hosted on Netlify outside Lovable's gateways.
+- Netlify builds use Nitro's `netlify` preset, switched on in vite.config.ts when NETLIFY is set, so the Lovable sandbox build is unaffected.
